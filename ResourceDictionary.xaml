@@ -1,0 +1,10 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:PentominoConverters="clr-namespace:Pentomino.ValueConverters"
+                    >
+
+    <PentominoConverters:BooleanToVisibilityConverter x:Key="appres_TrueIsVisible" TrueVisibility="Visible" FalseVisibility="Collapsed" />
+    <PentominoConverters:BooleanToVisibilityConverter x:Key="appres_FalseIsVisible" TrueVisibility="Collapsed" FalseVisibility="Visible"/>
+    <PentominoConverters:BooleanToVisibilityConverter x:Key="appres_TrueIsHidden" TrueVisibility="Hidden" FalseVisibility="Visible" />
+
+</ResourceDictionary>
