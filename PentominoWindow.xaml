@@ -6,11 +6,11 @@
         xmlns:local="clr-namespace:Pentomino"
         mc:Ignorable="d"
         Title="{x:Static local:LocalizableStrings.idsApplicationName}"
-        Height="480"
-        Width="800"
         Loaded="OnWindowLoadedAsync"
         Closing="OnWindowClosing"
         MouseLeftButtonUp="OnWindowMouseLeftButtonUp"
+        Width="806"
+        Height="520"
         >
     <Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding IsSolving, Converter={StaticResource appres_TrueIsVisible}}">
@@ -25,45 +25,18 @@
                 />
         </StackPanel>
 
-        <Border BorderThickness="1,1,1,1" BorderBrush="Black" Visibility="{Binding IsSolving, Converter={StaticResource appres_FalseIsVisible}}">
+        <Border BorderThickness="1,1,1,1" BorderBrush="Black" Visibility="{Binding IsSolving, Converter={StaticResource appres_TrueIsHidden}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
 
-            <Grid x:Name="m_grid" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <Canvas
+                x:Name="m_canvas"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                >
+                <Canvas.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding CanvasScaleX}" ScaleY="{Binding CanvasScaleY}" />
+                </Canvas.RenderTransform>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="2" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="2" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="2" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="2" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="2" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-            </Grid>
+            </Canvas>
 
         </Border>
     </Grid>

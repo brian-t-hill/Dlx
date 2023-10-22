@@ -7,10 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
 using Pentomino.Helpers;
+
+using static Pentomino.Algorithms.PentominoMatrix;
 
 namespace Pentomino.ViewModels;
 
@@ -34,54 +37,176 @@ public class PentominoViewModel : PropertyChangeNotifier
 
     public PentominoViewModel()
     {
-        this.BoardSquares = new Shape[60];
-
-        for (int jj = 0; jj < 60; ++jj)
+        this.Shapes = new Shape[]
         {
-            int column = jj % 10 * 2;
-            int row = jj / 10 * 2;
+            new Polygon()
+            {
+                // . F F
+                // F F .
+                // . F .
 
-            this.BoardSquares[jj] = new Rectangle();
+                Points = new() { new(100, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) },
+            },
 
-            Grid.SetColumn(this.BoardSquares[jj], column);
-            Grid.SetRow(this.BoardSquares[jj], row);
+            new Polygon()
+            {
+                // . . . L
+                // L L L L
 
-            this.BoardSquares[jj].Fill = Brushes[k_Empty_Index];
+                Points = new() { new(300, 0), new(400, 0), new(400, 200), new(00, 200), new(0, 100), new(300, 100) },
+            },
+
+            new Polygon()
+            {
+                // I I I I I
+
+                Points = new() { new(0, 0), new(500, 0), new(500, 100), new(0, 100) },
+            },
+
+            new Polygon()
+            {
+                // P .
+                // P P
+                // P P
+
+                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 300), new(0, 300) },
+            },
+
+            new Polygon()
+            {
+                // . . S S
+                // S S S .
+
+                Points = new() { new(200, 0), new(400, 0), new(400, 100), new(300, 100), new(300, 200), new(0, 200), new(0, 100), new(200, 100) },
+            },
+
+            new Polygon()
+            {
+                // T T T
+                // . T .
+                // . T .
+
+                Points = new() { new(0, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 100), new(0, 100) },
+            },
+
+            new Polygon()
+            {
+                // U . U
+                // U U U
+
+                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 0), new(300, 0), new(300, 200), new(0, 200) },
+            },
+
+            new Polygon()
+            {
+                // V . .
+                // V . .
+                // V V V
+
+                Points = new() { new(0, 0), new(100, 0), new(100, 200), new(300, 200), new(300, 300), new(0, 300) },
+            },
+
+            new Polygon()
+            {
+                // W . .
+                // W W .
+                // . W W
+
+                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 200), new(0, 200) },
+            },
+
+            new Polygon()
+            {
+                // . X .
+                // X X X
+                // . X .
+
+                Points = new() { new(100, 0), new(200, 0), new(200, 100), new(300, 100), new(300, 200), new(200, 200), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) },
+            },
+
+            new Polygon()
+            {
+                // . . Y .
+                // Y Y Y Y
+
+                Points = new() { new(200, 0), new(300, 0), new(300, 100), new(400, 100), new(400, 200), new(0, 200), new(0, 100), new(200, 100) },
+            },
+
+            new Polygon()
+            {
+                // Z Z .
+                // . Z .
+                // . Z Z
+
+                Points = new() { new(0, 0), new(200, 0), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 100), new(0, 100) },
+            },
+        };
+
+        for (int jj = k_F_Index; jj <= k_Z_Index; ++jj)
+        {
+            this.Shapes[jj].Stroke = Brushes[k_Border_Index];
+            this.Shapes[jj].Fill = Brushes[jj];
+            this.Shapes[jj].StrokeThickness = 2;
+            this.Shapes[jj].HorizontalAlignment = HorizontalAlignment.Left;
+            this.Shapes[jj].VerticalAlignment = VerticalAlignment.Top;
+            this.Shapes[jj].RenderTransformOrigin = new(0.5, 0.5);
+
+            Canvas.SetLeft(this.Shapes[jj], 0);
+            Canvas.SetTop(this.Shapes[jj], 0);
         }
 
-        this.BoardLines = new Shape[104];
+        TransformGroup transformGroup = new();
+        transformGroup.Children.Add(new RotateTransform() { Angle = 180 });
+        transformGroup.Children.Add(new TranslateTransform() { X = -10, Y = -10 });
 
-        // vertical lines
+        this.Shapes[k_F_Index].RenderTransform = transformGroup;
 
-        for (int jj = 0; jj < 54; ++jj)
-        {
-            int column = jj % 9 * 2 + 1;
-            int row = jj / 9 * 2;
+        transformGroup = new();
+        transformGroup.Children.Add(new RotateTransform() { Angle = 90 });
+        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
+        transformGroup.Children.Add(new TranslateTransform() { X = -20, Y = -10 });
 
-            this.BoardLines[jj] = new Rectangle();
+        this.Shapes[k_L_Index].RenderTransform = transformGroup;
 
-            Grid.SetColumn(this.BoardLines[jj], column);
-            Grid.SetRow(this.BoardLines[jj], row);
+        this.Shapes[k_I_Index].RenderTransform = new TranslateTransform() { X = 30, Y = -20 };
 
-            this.BoardLines[jj].Fill = Brushes[k_NoBorder_Index];
-        }
+        this.Shapes[k_P_Index].RenderTransform = new TranslateTransform() { X = 40, Y = 10 };
 
-        // horizontal lines
+        this.Shapes[k_S_Index].RenderTransform = new TranslateTransform() { X = 0, Y = 30 };
 
-        for (int jj = 0; jj < 50; ++jj)
-        {
-            int index = jj + 54;
+        transformGroup = new();
+        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
+        transformGroup.Children.Add(new TranslateTransform() { X = 20, Y = -20 });
 
-            int column = jj % 10 * 2;
-            int row = jj / 10 * 2 + 1;
+        this.Shapes[k_T_Index].RenderTransform = transformGroup;
 
-            this.BoardLines[index] = new Rectangle();
+        transformGroup = new();
+        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
+        transformGroup.Children.Add(new TranslateTransform() { X = 60, Y = 10 });
 
-            Grid.SetColumn(this.BoardLines[index], column);
-            Grid.SetRow(this.BoardLines[index], row);
+        this.Shapes[k_U_Index].RenderTransform = transformGroup;
 
-            this.BoardLines[jj].Fill = Brushes[k_NoBorder_Index];
-        }
+        transformGroup = new();
+        transformGroup.Children.Add(new ScaleTransform() { ScaleX = -1 });
+        transformGroup.Children.Add(new TranslateTransform() { X = 60, Y = -10 });
+
+        this.Shapes[k_V_Index].RenderTransform = transformGroup;
+
+        transformGroup = new();
+        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
+        transformGroup.Children.Add(new TranslateTransform() { X = 20, Y = 0 });
+
+        this.Shapes[k_W_Index].RenderTransform = transformGroup;
+
+        this.Shapes[k_X_Index].RenderTransform = new TranslateTransform() { X = 0, Y = -10 };
+
+        this.Shapes[k_Y_Index].RenderTransform = new TranslateTransform() { X = 60, Y = 30 };
+
+        transformGroup = new();
+        transformGroup.Children.Add(new RotateTransform() { Angle = 90 });
+        transformGroup.Children.Add(new TranslateTransform() { X = 50, Y = -10 });
+
+        this.Shapes[k_Z_Index].RenderTransform = transformGroup;
     }
 
 
@@ -110,9 +235,7 @@ public class PentominoViewModel : PropertyChangeNotifier
     };
 
 
-    public Shape[] BoardSquares { get; private set; }
-
-    public Shape[] BoardLines { get; private set; }
+    public Shape[] Shapes { get; private set; }
 
 
     private bool m_isSolving = false;
@@ -121,6 +244,31 @@ public class PentominoViewModel : PropertyChangeNotifier
     {
         get => m_isSolving;
         private set => this.SetProperty(ref m_isSolving, value);
+    }
+
+
+    private double m_canvasScaleX = 1.0;
+
+    public double CanvasScaleX
+    {
+        get => m_canvasScaleX;
+        set => this.SetProperty(ref m_canvasScaleX, value);
+    }
+
+
+    private double m_canvasScaleY = 1.0;
+
+    public double CanvasScaleY
+    {
+        get => m_canvasScaleY;
+        set => this.SetProperty(ref m_canvasScaleY, value);
+    }
+
+
+    public void OnCanvasSizeChanged(double actualWidth, double actualHeight)
+    {
+        this.CanvasScaleX = actualWidth / 1000.0;
+        this.CanvasScaleY = actualHeight / 600.0;
     }
 
 
@@ -164,37 +312,6 @@ public class PentominoViewModel : PropertyChangeNotifier
     public string SolverElapsedDurationString => TimeSpan.FromSeconds(this.SolverElapsedSeconds).ToString("g");
 
 
-    private readonly int[] m_fragments = new int[60];  // index is which spot on board (0-59). Value is which piece (FLIPSTUVWXYZ + empty).
-
-
-    private int GetShapeIndexFromSolutionRow(int rowIndex)
-    {
-        if (m_pentominoMatrix is null)
-            return 13;
-
-        for (int jj = 0; jj < 12; ++jj)
-        {
-            if (m_pentominoMatrix[jj, rowIndex])
-                return jj;
-        }
-
-        return 13;
-    }
-
-
-    private IEnumerable<int> GetBoardPositionsFromSolutionRow(int rowIndex)
-    {
-        if (m_pentominoMatrix is null)
-            yield break;
-
-        for (int jj = 0; jj < 60; ++jj)
-        {
-            if (m_pentominoMatrix[jj + 12, rowIndex])
-                yield return jj;
-        }
-    }
-
-
     [CalledWhenPropertyChanges(nameof(PentominoSolutions))]
     private void OnSolutionsChanged()
     {
@@ -202,66 +319,69 @@ public class PentominoViewModel : PropertyChangeNotifier
     }
 
 
+    private static Transform GetTransformFromMetadata(PlacementMetadata metadata)
+    {
+        RotateTransform? rotation = (metadata.Angle != 0 ? new RotateTransform { Angle = metadata.Angle } : null);
+        TranslateTransform? translation = null; // (metadata.TranslateY != 0 || metadata.TranslateY != 0 ? new TranslateTransform { X = metadata.TranslateX * 100, Y = metadata.TranslateY * 100} : null);
+        ScaleTransform? scale = (metadata.ScaleX != 1 || metadata.ScaleY != 1 ? new ScaleTransform { ScaleX = metadata.ScaleX, ScaleY = metadata.ScaleY} : null);
+
+        int count = (rotation is null ? 0 : 1) + (translation is null ? 0 : 1) + (scale is null ? 0 : 1);
+
+        if (count == 0)
+            return Transform.Identity;
+
+        if (count == 1)
+            return (Transform?) rotation ?? (Transform?) translation ?? scale!;
+
+        TransformGroup transformGroup = new();
+
+        if (rotation is not null)
+            transformGroup.Children.Add(rotation);
+
+        if (translation is not null)
+            transformGroup.Children.Add(translation);
+
+        if (scale is not null)
+            transformGroup.Children.Add(scale);
+
+        return transformGroup;
+    }
+
+
     public void OnPickANewSolution()
     {
-        if (this.IsSolving || m_pentominoMatrix is null)
+        if (this.IsSolving || m_pentominoMatrix is null || m_pentominoPlacementMetadata is null)
             return;
 
-        foreach (int rowIndex in this.PentominoSolutions[(new Random()).Next(this.PentominoSolutions.Count)])
+        int solutionIndex = (new Random()).Next(this.PentominoSolutions.Count);
+        HashSet<int> solution = this.PentominoSolutions[solutionIndex];
+
+        char[,] board = Algorithms.PentominoMatrix.ComposeBoard(10, 6, solution, this.m_pentominoMatrix);
+        board.GetType();
+
+        foreach (int rowIndex in solution)
         {
-            int shape = GetShapeIndexFromSolutionRow(rowIndex);
+            // each row is the placement of a single piece.  We can learn about the piece and its placement from our metadata.
 
-            foreach (var boardPosition in this.GetBoardPositionsFromSolutionRow(rowIndex))
-            {
-                m_fragments[boardPosition] = shape;
-            }
-        }
+            int piece = m_pentominoPlacementMetadata[rowIndex].Piece;
+            Shape shape = this.Shapes[piece];
 
-        this.OnFragmentsUpdated();
-    }
+            shape.RenderTransform = GetTransformFromMetadata(m_pentominoPlacementMetadata[rowIndex]);
 
-
-    private void OnFragmentsUpdated()
-    {
-        // Color the board squares
-
-        for (int jj = 0; jj < 60; ++jj)
-        {
-            this.BoardSquares[jj].Fill = Brushes[m_fragments[jj]];
-        }
-
-
-        // Color the lines
-
-        for (int y = 0; y < 6; ++y)
-        {
-            for (int x = 0; x < 10; ++x)
-            {
-                int boardIndex = y * 10 + x;
-                int horizontalNeighborIndex = boardIndex + 1;
-                int verticalNeighborIndex = boardIndex + 10;
-
-                int verticalLineIndex = y * 9 + x;
-                int horizontalLineIndex = 54 + y * 10 + x;
-
-                if (x < 9)
-                    this.BoardLines[verticalLineIndex].Fill = Brushes[(m_fragments[boardIndex] == m_fragments[horizontalNeighborIndex]) ? m_fragments[boardIndex] : k_Border_Index];
-
-                if (y < 5)
-                    this.BoardLines[horizontalLineIndex].Fill = Brushes[(m_fragments[boardIndex] == m_fragments[verticalNeighborIndex]) ? m_fragments[boardIndex] : k_Border_Index];
-            }
+            Canvas.SetLeft(shape, m_pentominoPlacementMetadata[rowIndex].LeftAdjust * 100);
+            Canvas.SetTop(shape, m_pentominoPlacementMetadata[rowIndex].TopAdjust * 100);
         }
     }
 
 
-    bool[,]? m_pentominoMatrix = null;
-
+    private bool[,]? m_pentominoMatrix = null;
+    private PlacementMetadata[]? m_pentominoPlacementMetadata = null;
 
     CancellationTokenSource m_pentominoSolverCts = new CancellationTokenSource();
 
     public async Task OnLoadedAsync(object sender, RoutedEventArgs e)
     {
-        m_pentominoMatrix = Algorithms.PentominoMatrix.MakeMatrixFor10x6();
+        (m_pentominoMatrix, m_pentominoPlacementMetadata) = Algorithms.PentominoMatrix.MakeMatrixFor10x6WithMetadata();
 
         CancellationToken cancelToken = m_pentominoSolverCts.Token;
 

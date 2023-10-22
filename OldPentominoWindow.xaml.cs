@@ -22,25 +22,43 @@ using System.Windows.Shapes;
 
 namespace Pentomino;
 
-public partial class PentominoWindow : Window
+public partial class OldPentominoWindow : Window
 {
-    public PentominoWindow()
+    public OldPentominoWindow()
     {
         this.InitializeComponent();
 
         this.ViewModel = new();
         this.DataContext = this.ViewModel;
 
-        foreach (Shape shape in this.ViewModel.Shapes)
+        foreach (Shape shape in this.ViewModel.BoardSquares)
         {
-            m_canvas.Children.Add(shape);
+            m_grid.Children.Add(shape);
         }
 
-        m_canvas.SizeChanged += (s, e) => this.ViewModel.OnCanvasSizeChanged(m_canvas.ActualWidth, m_canvas.ActualHeight);
+        foreach (Shape shape in this.ViewModel.BoardLines)
+        {
+            m_grid.Children.Add(shape);
+        }
+
+#if false
+        bool[,] sampleMatrix = new bool[7, 6]
+        {
+            { false, false, false, true,  true,  false },
+            { false, false, true,  false, false, true  },
+            { false, false, false, true,  true,  false },
+            { false, true,  false, true,  false, true  },
+            { false, true,  false, false, false, false },
+            { true,  false, true,  false, false, true  },
+            { true,  false, false, false, true,  false },
+        };
+
+        List<HashSet<int>> sampleSolutions = Algorithms.Dlx.Solve(sampleMatrix, CancellationToken.None);
+#endif
     }
 
 
-    public PentominoViewModel ViewModel { get; init; }
+    public OldPentominoViewModel ViewModel { get; init; }
 
 
     private async void OnWindowLoadedAsync(object sender, RoutedEventArgs e)
