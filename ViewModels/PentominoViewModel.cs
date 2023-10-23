@@ -11,8 +11,10 @@ using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
+using Pentomino.Algorithms;
 using Pentomino.Helpers;
 
+using static Pentomino.Algorithms.Dlx;
 using static Pentomino.Algorithms.PentominoMatrix;
 
 namespace Pentomino.ViewModels;
@@ -31,9 +33,26 @@ public class PentominoViewModel : PropertyChangeNotifier
     private const int k_X_Index = 9;
     private const int k_Y_Index = 10;
     private const int k_Z_Index = 11;
-    private const int k_Empty_Index = 12;
-    private const int k_Border_Index = 13;
-    private const int k_NoBorder_Index = 14;
+    private const int k_Border_Index = 12;
+
+    private static readonly Brush[] Brushes = new Brush[]
+    {
+        /* F */ new SolidColorBrush(Colors.Peru),
+        /* L */ new SolidColorBrush(Colors.Red),
+        /* I */ new SolidColorBrush(Colors.LightSteelBlue),
+        /* P */ new SolidColorBrush(Colors.Yellow),
+        /* S */ new SolidColorBrush(Colors.DarkGray),
+        /* T */ new SolidColorBrush(Colors.Firebrick),
+        /* U */ new SolidColorBrush(Colors.DarkOrchid),
+        /* V */ new SolidColorBrush(Colors.RoyalBlue),
+        /* W */ new SolidColorBrush(Colors.Lime),
+        /* X */ new SolidColorBrush(Colors.NavajoWhite),
+        /* Y */ new SolidColorBrush(Colors.Green),
+        /* Z */ new SolidColorBrush(Colors.Aquamarine),
+
+        /* | */ new SolidColorBrush(Colors.Black),  // k_Border_Index
+    };
+
 
     public PentominoViewModel()
     {
@@ -154,85 +173,10 @@ public class PentominoViewModel : PropertyChangeNotifier
             Canvas.SetLeft(this.Shapes[jj], 0);
             Canvas.SetTop(this.Shapes[jj], 0);
         }
-
-        TransformGroup transformGroup = new();
-        transformGroup.Children.Add(new RotateTransform() { Angle = 180 });
-        transformGroup.Children.Add(new TranslateTransform() { X = -10, Y = -10 });
-
-        this.Shapes[k_F_Index].RenderTransform = transformGroup;
-
-        transformGroup = new();
-        transformGroup.Children.Add(new RotateTransform() { Angle = 90 });
-        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
-        transformGroup.Children.Add(new TranslateTransform() { X = -20, Y = -10 });
-
-        this.Shapes[k_L_Index].RenderTransform = transformGroup;
-
-        this.Shapes[k_I_Index].RenderTransform = new TranslateTransform() { X = 30, Y = -20 };
-
-        this.Shapes[k_P_Index].RenderTransform = new TranslateTransform() { X = 40, Y = 10 };
-
-        this.Shapes[k_S_Index].RenderTransform = new TranslateTransform() { X = 0, Y = 30 };
-
-        transformGroup = new();
-        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
-        transformGroup.Children.Add(new TranslateTransform() { X = 20, Y = -20 });
-
-        this.Shapes[k_T_Index].RenderTransform = transformGroup;
-
-        transformGroup = new();
-        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
-        transformGroup.Children.Add(new TranslateTransform() { X = 60, Y = 10 });
-
-        this.Shapes[k_U_Index].RenderTransform = transformGroup;
-
-        transformGroup = new();
-        transformGroup.Children.Add(new ScaleTransform() { ScaleX = -1 });
-        transformGroup.Children.Add(new TranslateTransform() { X = 60, Y = -10 });
-
-        this.Shapes[k_V_Index].RenderTransform = transformGroup;
-
-        transformGroup = new();
-        transformGroup.Children.Add(new ScaleTransform() { ScaleY = -1 });
-        transformGroup.Children.Add(new TranslateTransform() { X = 20, Y = 0 });
-
-        this.Shapes[k_W_Index].RenderTransform = transformGroup;
-
-        this.Shapes[k_X_Index].RenderTransform = new TranslateTransform() { X = 0, Y = -10 };
-
-        this.Shapes[k_Y_Index].RenderTransform = new TranslateTransform() { X = 60, Y = 30 };
-
-        transformGroup = new();
-        transformGroup.Children.Add(new RotateTransform() { Angle = 90 });
-        transformGroup.Children.Add(new TranslateTransform() { X = 50, Y = -10 });
-
-        this.Shapes[k_Z_Index].RenderTransform = transformGroup;
     }
 
 
     public EventHandler? m_solverElapsedSecondsTimer = null;
-
-
-    private static readonly Brush[] Brushes = new Brush[]
-    {
-        /* F */ new SolidColorBrush(Colors.Peru),
-        /* L */ new SolidColorBrush(Colors.Red),
-        /* I */ new SolidColorBrush(Colors.LightSteelBlue),
-        /* P */ new SolidColorBrush(Colors.Yellow),
-        /* S */ new SolidColorBrush(Colors.DarkGray),
-        /* T */ new SolidColorBrush(Colors.Firebrick),
-        /* U */ new SolidColorBrush(Colors.DarkOrchid),
-        /* V */ new SolidColorBrush(Colors.RoyalBlue),
-        /* W */ new SolidColorBrush(Colors.Lime),
-        /* X */ new SolidColorBrush(Colors.NavajoWhite),
-        /* Y */ new SolidColorBrush(Colors.Green),
-        /* Z */ new SolidColorBrush(Colors.Aquamarine),
-
-        /* _ */ new SolidColorBrush(Colors.Ivory),  // k_Empty_Index
-
-        /* | */ new SolidColorBrush(Colors.Black),  // k_Border_Index
-        /*   */ new SolidColorBrush(Colors.Transparent),  // k_NoBorder_Index
-    };
 
 
     public Shape[] Shapes { get; private set; }
@@ -312,6 +256,10 @@ public class PentominoViewModel : PropertyChangeNotifier
     public string SolverElapsedDurationString => TimeSpan.FromSeconds(this.SolverElapsedSeconds).ToString("g");
 
 
+    [NotifiesWith(nameof(SolverElapsedSeconds))]
+    public string SolutionCount => m_progressCount.Count == 0 ? string.Empty : $"Solutions found: {m_progressCount.Count:n0}";
+ 
+
     [CalledWhenPropertyChanges(nameof(PentominoSolutions))]
     private void OnSolutionsChanged()
     {
@@ -319,27 +267,23 @@ public class PentominoViewModel : PropertyChangeNotifier
     }
 
 
-    private static Transform GetTransformFromMetadata(PlacementMetadata metadata)
+    private static Transform GetRotateAndScaleTransformsFromMetadata(PlacementMetadata metadata)
     {
         RotateTransform? rotation = (metadata.Angle != 0 ? new RotateTransform { Angle = metadata.Angle } : null);
-        TranslateTransform? translation = null; // (metadata.TranslateY != 0 || metadata.TranslateY != 0 ? new TranslateTransform { X = metadata.TranslateX * 100, Y = metadata.TranslateY * 100} : null);
         ScaleTransform? scale = (metadata.ScaleX != 1 || metadata.ScaleY != 1 ? new ScaleTransform { ScaleX = metadata.ScaleX, ScaleY = metadata.ScaleY} : null);
 
-        int count = (rotation is null ? 0 : 1) + (translation is null ? 0 : 1) + (scale is null ? 0 : 1);
+        int count = (rotation is null ? 0 : 1) + (scale is null ? 0 : 1);
 
         if (count == 0)
             return Transform.Identity;
 
         if (count == 1)
-            return (Transform?) rotation ?? (Transform?) translation ?? scale!;
+            return (Transform?) rotation ?? scale!;
 
         TransformGroup transformGroup = new();
 
         if (rotation is not null)
             transformGroup.Children.Add(rotation);
-
-        if (translation is not null)
-            transformGroup.Children.Add(translation);
 
         if (scale is not null)
             transformGroup.Children.Add(scale);
@@ -366,7 +310,7 @@ public class PentominoViewModel : PropertyChangeNotifier
             int piece = m_pentominoPlacementMetadata[rowIndex].Piece;
             Shape shape = this.Shapes[piece];
 
-            shape.RenderTransform = GetTransformFromMetadata(m_pentominoPlacementMetadata[rowIndex]);
+            shape.RenderTransform = GetRotateAndScaleTransformsFromMetadata(m_pentominoPlacementMetadata[rowIndex]);
 
             Canvas.SetLeft(shape, m_pentominoPlacementMetadata[rowIndex].LeftAdjust * 100);
             Canvas.SetTop(shape, m_pentominoPlacementMetadata[rowIndex].TopAdjust * 100);
@@ -377,7 +321,9 @@ public class PentominoViewModel : PropertyChangeNotifier
     private bool[,]? m_pentominoMatrix = null;
     private PlacementMetadata[]? m_pentominoPlacementMetadata = null;
 
-    CancellationTokenSource m_pentominoSolverCts = new CancellationTokenSource();
+    CancellationTokenSource m_pentominoSolverCts = new();
+
+    private Dlx.ProgressCount m_progressCount = new();
 
     public async Task OnLoadedAsync(object sender, RoutedEventArgs e)
     {
@@ -390,7 +336,7 @@ public class PentominoViewModel : PropertyChangeNotifier
 
         await Task.Run(() =>
         {
-            solutions = Algorithms.Dlx.Solve(m_pentominoMatrix, cancelToken);
+            solutions = Algorithms.Dlx.Solve(m_pentominoMatrix, cancelToken, m_progressCount);
         });
 
         this.IsSolving = false;

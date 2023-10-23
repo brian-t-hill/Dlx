@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Policy;
@@ -6,6 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
+using static Pentomino.Algorithms.Dlx;
 
 namespace Pentomino.Algorithms;
 
@@ -50,6 +53,15 @@ public class Dlx
 
             m_column = this;  // column header nodes point to themselves
         }
+    }
+
+
+    public class ProgressCount
+    {
+        private volatile int m_count = 0;
+    
+        // Count to be read by anybody, written only by Dlx solver.
+        public int Count { get => m_count; set => m_count = value; }
     }
 
 
@@ -181,7 +193,7 @@ public class Dlx
     }
 
 
-    private void Search(CancellationToken cancelToken)
+    private void Search(CancellationToken cancelToken, ProgressCount progressCount)
     {
         if (cancelToken.IsCancellationRequested)
             return;
@@ -191,6 +203,7 @@ public class Dlx
             // Since there are no more columns, we must have covered everything.
 
             m_solutions.Add(m_solution.ToHashSet());
+            ++progressCount.Count;
 
             return;
         }
@@ -216,7 +229,7 @@ public class Dlx
                 Cover(right.m_column);  // Cover the column
             }
 
-            this.Search(cancelToken);  // recurse
+            this.Search(cancelToken, progressCount);  // recurse
 
             // backtrack (reject the proposed solution)
             m_solution.Remove(row.m_row);
@@ -233,19 +246,15 @@ public class Dlx
     }
 
 
-    private List<HashSet<int>> Solve(CancellationToken cancelToken)
+    public static List<HashSet<int>> Solve(bool[/* col */, /* row */] matrix, CancellationToken cancelToken, ProgressCount? progressCount = null)
     {
-        this.Search(cancelToken);
+        progressCount ??= new();
+        progressCount.Count = 0;
 
-        return m_solutions;
-    }
-
-
-    public static List<HashSet<int>> Solve(bool[/* col */, /* row */] matrix, CancellationToken cancelToken)
-    {
         Dlx dlx = new(matrix);
+        dlx.Search(cancelToken, progressCount);
 
-        return dlx.Solve(cancelToken);
+        return dlx.m_solutions;
     }
 
 
