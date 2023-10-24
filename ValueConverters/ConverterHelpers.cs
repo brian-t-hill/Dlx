@@ -9,9 +9,9 @@ namespace Pentomino.ValueConverters;
 
 static class ConverterHelpers
 {
-    public static bool AsBool(this object value)
+    public static bool AsBool(this object? value)
     {
-        if (value == null)
+        if (value is null)
             return false;
 
         bool boolValue = false;
@@ -27,5 +27,25 @@ static class ConverterHelpers
 
         return boolValue;
     }
+
+
+    public static int AsInt(this object? value)
+    {
+        if (value is null)
+            return 0;
+
+        int intValue = 0;
+
+        try
+        {
+            intValue = (int) value;
+        }
+        catch (Exception)
+        {
+        }
+
+        return intValue;
+    }
+
 }
 

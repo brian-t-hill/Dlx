@@ -27,18 +27,18 @@ public class Command<T> : CommandBase, ICommand
 
     public bool CanExecute(object? parameter)
     {
-        if (parameter is not T t)
+        if (parameter is not null && parameter is not T)
             throw new ArgumentException("parameter is not T", nameof(parameter));
 
-        return m_canExecute?.Invoke(t) ?? true;
+        return m_canExecute?.Invoke((T) parameter!) ?? true;
     }
 
     public void Execute(object? parameter)
     {
-        if (parameter is not T t)
+        if (parameter is not null && parameter is not T)
             throw new ArgumentException("parameter is not T", nameof(parameter));
 
-        m_execute.Invoke(t);
+        m_execute.Invoke((T) parameter!);
     }
 
 
@@ -54,20 +54,28 @@ public class Command<T> : CommandBase, ICommand
         m_canExecute = canExecute;
     }
 
+    public static Command<T> NeverExecute { get; } = new((p) => false, (p) => { });
+
+    public static Command<T> AlwaysExecuteNoOp { get; } = new((p) => { });
 }
 
 
-public class Command : Command<object>
+public class Command : Command<object?>
 {
     public Command(Action execute)
-        : base((object o) => execute?.Invoke())
+        : base((object? o) => execute?.Invoke())
     {
     }
 
 
     public Command(Func<bool>? canExecute, Action execute)
-        : base((object o) => canExecute?.Invoke() ?? true, (object o) => execute.Invoke())
+        : base((object? o) => canExecute?.Invoke() ?? true, (object? o) => execute.Invoke())
     {
     }
+
+
+    public new static Command NeverExecute { get; } = new(() => false, () => { });
+
+    public new static Command AlwaysExecuteNoOp { get; } = new(() => { });
 }
 

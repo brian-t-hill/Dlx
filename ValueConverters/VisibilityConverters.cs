@@ -35,3 +35,28 @@ public class BooleanToVisibilityConverter : IValueConverter
 
 
 
+public class VisibleIfMatchesConverter<T> : BooleanToVisibilityConverter where T : struct
+{
+    public IEquatable<T>? ParameterToMatch { get; set; } = null;
+
+    public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (this.ParameterToMatch is null || value is not T t)
+            return false;
+
+        return base.Convert(this.ParameterToMatch.Equals(t), targetType, parameter, culture);
+    }
+
+    public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+
+}
+
+
+public class VisibleIfMatchesIntConverter : VisibleIfMatchesConverter<int>
+{
+}
+
+

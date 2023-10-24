@@ -1,0 +1,28 @@
+﻿<Window x:Class="Pentomino.Views.LauncherWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Pentomino"
+        mc:Ignorable="d"
+        Title="{x:Static local:LocalizableStrings.idsApplicationName}" SizeToContent="WidthAndHeight">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="100" />
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Column="1" Grid.Row="1" Padding="15,5,15,5" Click="OnNewPentominoesWindow" Content="Pentominoes..."></Button>
+        <Button Grid.Column="1" Grid.Row="3" Padding="15,5,15,5" Click="OnNewSudokuWindow" Content="Sudoku..."></Button>
+
+    </Grid>
+</Window>

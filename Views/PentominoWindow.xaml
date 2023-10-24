@@ -1,14 +1,15 @@
-﻿<Window x:Class="Pentomino.PentominoWindow"
+﻿<Window x:Class="Pentomino.Views.PentominoWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pentomino"
         mc:Ignorable="d"
-        Title="{x:Static local:LocalizableStrings.idsApplicationName}"
+        Title="{x:Static local:LocalizableStrings.idsPentominoesWindowTitle}"
         Loaded="OnWindowLoadedAsync"
         Closing="OnWindowClosing"
         MouseLeftButtonUp="OnWindowMouseLeftButtonUp"
+        MouseRightButtonUp="OnWindowMouseRightButtonUp"
         Width="806"
         Height="520"
         >
@@ -25,10 +26,20 @@
                     FontSize="18"
                     />
             </StackPanel>
+
             <TextBlock
                 Margin="0,10,0,0"
                 Text="{Binding SolutionCount}"
                 FontSize="18"
+                />
+
+            <Button
+                Margin="0,10,0,0"
+                Padding="15,5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Content="{x:Static local:LocalizableStrings.idsCancelButton}"
+                Command="{Binding CancelCommand}"
                 />
         </StackPanel>
 

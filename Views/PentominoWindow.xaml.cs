@@ -20,7 +20,7 @@ using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Pentomino;
+namespace Pentomino.Views;
 
 public partial class PentominoWindow : Window
 {
@@ -56,6 +56,11 @@ public partial class PentominoWindow : Window
 
     private void OnWindowMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        this.ViewModel.OnPickANewSolution();
+        this.ViewModel.OnPickNextSolution(prev: false);
+    }
+
+    private void OnWindowMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        this.ViewModel.OnPickNextSolution(prev: true);
     }
 }

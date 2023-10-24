@@ -19,7 +19,7 @@ using static Pentomino.Algorithms.PentominoMatrix;
 
 namespace Pentomino.ViewModels;
 
-public class PentominoViewModel : PropertyChangeNotifier
+public class PentominoViewModel : SolvingBaseViewModel
 {
     private const int k_F_Index = 0;
     private const int k_L_Index = 1;
@@ -176,19 +176,7 @@ public class PentominoViewModel : PropertyChangeNotifier
     }
 
 
-    public EventHandler? m_solverElapsedSecondsTimer = null;
-
-
     public Shape[] Shapes { get; private set; }
-
-
-    private bool m_isSolving = false;
-
-    public bool IsSolving
-    {
-        get => m_isSolving;
-        private set => this.SetProperty(ref m_isSolving, value);
-    }
 
 
     private double m_canvasScaleX = 1.0;
@@ -216,61 +204,10 @@ public class PentominoViewModel : PropertyChangeNotifier
     }
 
 
-    [CalledWhenPropertyChanges(nameof(IsSolving))]
-    private void OnIsSolvingChanged()
-    {
-        if (this.IsSolving)
-        {
-            m_solverElapsedSecondsTimer = (o, e) => ++this.SolverElapsedSeconds;
-
-            this.SolverElapsedSeconds = 0;
-            PentominoApp.Current.OneSecondTimer += m_solverElapsedSecondsTimer;
-        }
-        else
-        {
-            PentominoApp.Current.OneSecondTimer -= m_solverElapsedSecondsTimer;
-            m_solverElapsedSecondsTimer = null;
-        }
-    }
-
-
-    private List<HashSet<int>> m_pentominoSolutions = new();
-
-    public List<HashSet<int>> PentominoSolutions
-    {
-        get => m_pentominoSolutions;
-        set => this.SetProperty(ref m_pentominoSolutions, value);
-    }
-
-
-    private int m_solverElapsedSeconds = 0;
-
-    public int SolverElapsedSeconds
-    {
-        get => m_solverElapsedSeconds;
-        private set => this.SetProperty(ref m_solverElapsedSeconds, value);
-    }
-
-
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    public string SolverElapsedDurationString => TimeSpan.FromSeconds(this.SolverElapsedSeconds).ToString("g");
-
-
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    public string SolutionCount => m_progressCount.Count == 0 ? string.Empty : $"Solutions found: {m_progressCount.Count:n0}";
- 
-
-    [CalledWhenPropertyChanges(nameof(PentominoSolutions))]
-    private void OnSolutionsChanged()
-    {
-        this.OnPickANewSolution();
-    }
-
-
     private static Transform GetRotateAndScaleTransformsFromMetadata(PlacementMetadata metadata)
     {
         RotateTransform? rotation = (metadata.Angle != 0 ? new RotateTransform { Angle = metadata.Angle } : null);
-        ScaleTransform? scale = (metadata.ScaleX != 1 || metadata.ScaleY != 1 ? new ScaleTransform { ScaleX = metadata.ScaleX, ScaleY = metadata.ScaleY} : null);
+        ScaleTransform? scale = (metadata.ScaleX != 1 || metadata.ScaleY != 1 ? new ScaleTransform { ScaleX = metadata.ScaleX, ScaleY = metadata.ScaleY } : null);
 
         int count = (rotation is null ? 0 : 1) + (scale is null ? 0 : 1);
 
@@ -292,13 +229,19 @@ public class PentominoViewModel : PropertyChangeNotifier
     }
 
 
-    public void OnPickANewSolution()
+    public override void OnPickNextSolution(bool prev = false)
     {
-        if (this.IsSolving || m_pentominoMatrix is null || m_pentominoPlacementMetadata is null)
+        if (this.IsSolving || m_pentominoMatrix is null || m_pentominoPlacementMetadata is null || this.Solutions.Count == 0)
             return;
 
-        int solutionIndex = (new Random()).Next(this.PentominoSolutions.Count);
-        HashSet<int> solution = this.PentominoSolutions[solutionIndex];
+        if (this.CurrentSolution == -1)
+            this.CurrentSolution = RandomGenerator.Current.Next(this.Solutions.Count);
+
+        int proposedSolution = this.CurrentSolution + (prev ? -1 : 1);
+        int wrapAround = (prev ? this.Solutions.Count - 1 : 0);
+
+        this.CurrentSolution = (proposedSolution >= 0 && proposedSolution < this.Solutions.Count ? proposedSolution : wrapAround);
+        HashSet<int> solution = this.Solutions[this.RandomizedSolutionIndexes[this.CurrentSolution]];
 
         char[,] board = Algorithms.PentominoMatrix.ComposeBoard(10, 6, solution, this.m_pentominoMatrix);
         board.GetType();
@@ -321,15 +264,13 @@ public class PentominoViewModel : PropertyChangeNotifier
     private bool[,]? m_pentominoMatrix = null;
     private PlacementMetadata[]? m_pentominoPlacementMetadata = null;
 
-    CancellationTokenSource m_pentominoSolverCts = new();
-
-    private Dlx.ProgressCount m_progressCount = new();
-
     public async Task OnLoadedAsync(object sender, RoutedEventArgs e)
     {
+        this.ResetCancellationTokenSource();
+
         (m_pentominoMatrix, m_pentominoPlacementMetadata) = Algorithms.PentominoMatrix.MakeMatrixFor10x6WithMetadata();
 
-        CancellationToken cancelToken = m_pentominoSolverCts.Token;
+        CancellationToken cancelToken = this.SolverCancellationToken;
 
         this.IsSolving = true;
         List<HashSet<int>>? solutions = null;
@@ -340,13 +281,12 @@ public class PentominoViewModel : PropertyChangeNotifier
         });
 
         this.IsSolving = false;
-        this.PentominoSolutions = solutions ?? new();
+        this.Solutions = solutions ?? new();
     }
 
     public bool OnClosing()
     {
-        m_pentominoSolverCts.Cancel();
-        m_pentominoSolverCts = new();
+        this.ResetCancellationTokenSource();
 
         return false;
     }
