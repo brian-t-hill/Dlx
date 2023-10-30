@@ -223,6 +223,9 @@ public class Dlx
         {
             // Since there are no more columns, we must have covered everything successfully.
 
+            // REVIEW$:  When the number of solutions is large, the performance gets **REALLY**
+            // bad.  Probably from having to resize the large array.
+
             m_confirmedSolutions.Add(m_workingSolution.ToHashSet());
             ++progressMetrics.SolutionCount;
 

@@ -232,12 +232,13 @@ public class PentominoViewModel : SolvingBaseViewModel
 
         CancellationToken cancelToken = this.SolverCancellationToken;
 
+        this.DlxMetricsControlViewModel.ResetMetrics();
         this.IsSolving = true;
         List<HashSet<int>>? solutions = null;
 
         await Task.Run(() =>
         {
-            solutions = Algorithms.Dlx.Solve(m_pentominoMatrix, cancelToken, m_progressMetrics);
+            solutions = Algorithms.Dlx.Solve(m_pentominoMatrix, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
         });
 
         this.IsSolving = false;

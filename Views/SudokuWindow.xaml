@@ -57,22 +57,10 @@
                 />
 
             <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding IsSolving, Converter={StaticResource appres_TrueIsVisible}}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock
-                        Text="{x:Static local:LocalizableStrings.idsSolvingWithEllipsis}"
-                        FontSize="18"
-                        />
-                    <TextBlock
-                        Margin="10,0,0,0"
-                        Text="{Binding SolverElapsedDurationString}"
-                        FontSize="18"
-                        />
-                </StackPanel>
-
-                <TextBlock
-                    Margin="0,10,0,0"
-                    Text="{Binding SolutionCount}"
-                    FontSize="18"
+                <localViews:DlxMetricsControl
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    DataContext="{Binding DlxMetricsControlViewModel}"
                     />
 
                 <Button

@@ -27,7 +27,7 @@ public abstract class SolvingBaseViewModel : PropertyChangeNotifier
     }
 
 
-    private EventHandler? m_solverElapsedSecondsTimer = null;
+    public DlxMetricsControlViewModel DlxMetricsControlViewModel { get; } = new();
 
 
     private bool m_isSolving = false;
@@ -44,17 +44,9 @@ public abstract class SolvingBaseViewModel : PropertyChangeNotifier
     protected void OnIsSolvingChanged()
     {
         if (this.IsSolving)
-        {
-            m_solverElapsedSecondsTimer = (o, e) => ++this.SolverElapsedSeconds;
-
-            this.SolverElapsedSeconds = 0;
-            PentominoApp.Current.OneSecondTimer += m_solverElapsedSecondsTimer;
-        }
+            this.DlxMetricsControlViewModel.StartSolving();
         else
-        {
-            PentominoApp.Current.OneSecondTimer -= m_solverElapsedSecondsTimer;
-            m_solverElapsedSecondsTimer = null;
-        }
+            this.DlxMetricsControlViewModel.StopSolving();
     }
 
 
@@ -85,35 +77,6 @@ public abstract class SolvingBaseViewModel : PropertyChangeNotifier
     }
 
 
-    private int m_solverElapsedSeconds = 0;
-
-    public int SolverElapsedSeconds
-    {
-        get => m_solverElapsedSeconds;
-        private set => this.SetProperty(ref m_solverElapsedSeconds, value);
-    }
-
-
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(Solutions))]
-    public string SolverElapsedDurationString => TimeSpan.FromSeconds(this.SolverElapsedSeconds).ToString("g");
-
-
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(Solutions))]
-    public string SolutionCount => m_progressMetrics.SolutionCount == 0 ? string.Empty : string.Format(LocalizableStrings.idsSolutionsFoundFormat, m_progressMetrics.SolutionCount);
-
-
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(Solutions))]
-    public string RowsRemovedCount => m_progressMetrics.RowsRemoved == 0 ? string.Empty : string.Format(LocalizableStrings.idsRowsRemovedFormat, m_progressMetrics.RowsRemoved);
-
-
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(Solutions))]
-    public string RecursivePassesCount => m_progressMetrics.RecursivePasses == 0 ? string.Empty : string.Format(LocalizableStrings.idsRecursivePassesFormat, m_progressMetrics.RecursivePasses);
-
-
     [CalledWhenPropertyChanges(nameof(Solutions))]
     protected void OnSolutionsChanged()
     {
@@ -129,9 +92,6 @@ public abstract class SolvingBaseViewModel : PropertyChangeNotifier
 
 
     private CancellationTokenSource m_solverCts = new();
-
-    protected Dlx.ProgressMetrics m_progressMetrics = new();
-
 
     public CancellationToken SolverCancellationToken => m_solverCts.Token;
 

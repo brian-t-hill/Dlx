@@ -13,6 +13,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>LocalizableStrings.resx</DependentUpon>
     </Compile>
+    <Compile Update="Views\DlxMetricsControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
