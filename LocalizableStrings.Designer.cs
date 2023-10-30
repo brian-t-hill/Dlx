@@ -79,11 +79,56 @@ namespace Pentomino {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pentominoes....
+        /// </summary>
+        public static string idsLaunchPentominoesButton {
+            get {
+                return ResourceManager.GetString("idsLaunchPentominoesButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sudoku....
+        /// </summary>
+        public static string idsLaunchSudokuButton {
+            get {
+                return ResourceManager.GetString("idsLaunchSudokuButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pentominoes.
         /// </summary>
         public static string idsPentominoesWindowTitle {
             get {
                 return ResourceManager.GetString("idsPentominoesWindowTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recursive passes:  {0:n0}.
+        /// </summary>
+        public static string idsRecursivePassesFormat {
+            get {
+                return ResourceManager.GetString("idsRecursivePassesFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rows removed:  {0:n0}.
+        /// </summary>
+        public static string idsRowsRemovedFormat {
+            get {
+                return ResourceManager.GetString("idsRowsRemovedFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solutions found:  {0:n0}.
+        /// </summary>
+        public static string idsSolutionsFoundFormat {
+            get {
+                return ResourceManager.GetString("idsSolutionsFoundFormat", resourceCulture);
             }
         }
         

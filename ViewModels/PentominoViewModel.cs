@@ -58,115 +58,67 @@ public class PentominoViewModel : SolvingBaseViewModel
     {
         this.Shapes = new Shape[]
         {
-            new Polygon()
-            {
-                // . F F
-                // F F .
-                // . F .
+            // . F F
+            // F F .
+            // . F .
+            new Polygon() { Points = new() { new(100, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) } },
 
-                Points = new() { new(100, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) },
-            },
+            // L .
+            // L .
+            // L .
+            // L L
+            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 300), new(200, 300), new(200, 400), new(0, 400) } },
 
-            new Polygon()
-            {
-                // L .
-                // L .
-                // L .
-                // L L
+            // I
+            // I
+            // I
+            // I
+            // I
+            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 500), new(0, 500) } },
 
-                Points = new() { new(0, 0), new(100, 0), new(100, 300), new(200, 300), new(200, 400), new(0, 400) },
-            },
+            // P P
+            // P P
+            // P .
+            new Polygon() { Points = new() { new(0, 0), new(200, 0), new(200, 200), new(100, 200), new(100, 300), new(0, 300) } },
 
-            new Polygon()
-            {
-                // I
-                // I
-                // I
-                // I
-                // I
+            // S
+            // S S
+            // . S
+            // . S
+            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 400), new(100, 400), new(100, 200), new(0, 200) } },
 
-                Points = new() { new(0, 0), new(100, 0), new(100, 500), new(0, 500) },
-            },
+            // T T T
+            // . T .
+            // . T .
+            new Polygon() { Points = new() { new(0, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 100), new(0, 100) } },
 
-            new Polygon()
-            {
-                // P P
-                // P P
-                // P .
+            // U . U
+            // U U U
+            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 0), new(300, 0), new(300, 200), new(0, 200) } },
 
-                Points = new() { new(0, 0), new(200, 0), new(200, 200), new(100, 200), new(100, 300), new(0, 300) },
-            },
+            // V . .
+            // V . .
+            // V V V
+            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 200), new(300, 200), new(300, 300), new(0, 300) } },
 
-            new Polygon()
-            {
-                // S
-                // S S
-                // . S
-                // . S
+            // W . .
+            // W W .
+            // . W W
+            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 200), new(0, 200) } },
 
-                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 400), new(100, 400), new(100, 200), new(0, 200) },
-            },
+            // . X .
+            // X X X
+            // . X .
+            new Polygon() { Points = new() { new(100, 0), new(200, 0), new(200, 100), new(300, 100), new(300, 200), new(200, 200), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) } },
 
-            new Polygon()
-            {
-                // T T T
-                // . T .
-                // . T .
+            // . . Y .
+            // Y Y Y Y
+            new Polygon() { Points = new() { new(200, 0), new(300, 0), new(300, 100), new(400, 100), new(400, 200), new(0, 200), new(0, 100), new(200, 100) } },
 
-                Points = new() { new(0, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 100), new(0, 100) },
-            },
-
-            new Polygon()
-            {
-                // U . U
-                // U U U
-
-                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 0), new(300, 0), new(300, 200), new(0, 200) },
-            },
-
-            new Polygon()
-            {
-                // V . .
-                // V . .
-                // V V V
-
-                Points = new() { new(0, 0), new(100, 0), new(100, 200), new(300, 200), new(300, 300), new(0, 300) },
-            },
-
-            new Polygon()
-            {
-                // W . .
-                // W W .
-                // . W W
-
-                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 200), new(0, 200) },
-            },
-
-            new Polygon()
-            {
-                // . X .
-                // X X X
-                // . X .
-
-                Points = new() { new(100, 0), new(200, 0), new(200, 100), new(300, 100), new(300, 200), new(200, 200), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) },
-            },
-
-            new Polygon()
-            {
-                // . . Y .
-                // Y Y Y Y
-
-                Points = new() { new(200, 0), new(300, 0), new(300, 100), new(400, 100), new(400, 200), new(0, 200), new(0, 100), new(200, 100) },
-            },
-
-            new Polygon()
-            {
-                // Z Z .
-                // . Z .
-                // . Z Z
-
-                Points = new() { new(0, 0), new(200, 0), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 100), new(0, 100) },
-            },
+            // Z Z .
+            // . Z .
+            // . Z Z
+            new Polygon() { Points = new() { new(0, 0), new(200, 0), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 100), new(0, 100) } },
         };
 
         for (int jj = k_F_Index; jj <= k_Z_Index; ++jj)

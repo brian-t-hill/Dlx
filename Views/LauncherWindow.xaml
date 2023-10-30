@@ -21,8 +21,8 @@
             <ColumnDefinition Width="100" />
         </Grid.ColumnDefinitions>
 
-        <Button Grid.Column="1" Grid.Row="1" Padding="15,5,15,5" Click="OnNewPentominoesWindow" Content="Pentominoes..."></Button>
-        <Button Grid.Column="1" Grid.Row="3" Padding="15,5,15,5" Click="OnNewSudokuWindow" Content="Sudoku..."></Button>
+        <Button Grid.Column="1" Grid.Row="1" Padding="15,5,15,5" Click="OnNewPentominoesWindow" Content="{x:Static local:LocalizableStrings.idsLaunchPentominoesButton}"></Button>
+        <Button Grid.Column="1" Grid.Row="3" Padding="15,5,15,5" Click="OnNewSudokuWindow" Content="{x:Static local:LocalizableStrings.idsLaunchSudokuButton}"></Button>
 
     </Grid>
 </Window>

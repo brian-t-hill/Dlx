@@ -123,8 +123,23 @@
   <data name="idsCancelButton" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="idsLaunchPentominoesButton" xml:space="preserve">
+    <value>Pentominoes...</value>
+  </data>
+  <data name="idsLaunchSudokuButton" xml:space="preserve">
+    <value>Sudoku...</value>
+  </data>
   <data name="idsPentominoesWindowTitle" xml:space="preserve">
     <value>Pentominoes</value>
+  </data>
+  <data name="idsRecursivePassesFormat" xml:space="preserve">
+    <value>Recursive passes:  {0:n0}</value>
+  </data>
+  <data name="idsRowsRemovedFormat" xml:space="preserve">
+    <value>Rows removed:  {0:n0}</value>
+  </data>
+  <data name="idsSolutionsFoundFormat" xml:space="preserve">
+    <value>Solutions found:  {0:n0}</value>
   </data>
   <data name="idsSolveButton" xml:space="preserve">
     <value>Solve</value>

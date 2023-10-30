@@ -11,6 +11,14 @@ using System.Threading.Tasks;
 namespace Pentomino.Helpers;
 
 
+// Note:  This class incorporates ideas that I originally picked up from Brian Genisio, many years ago.
+// He originally published his view model class on codeplex.com, but I think that site may have since
+// shut down.  He indicated that he considered the class in public domain, so I felt free to let it
+// inspire me.  I've made various changes over the years and this particular implementation is a much
+// simplified version.  Thanks, Brian Genisio, for your suggestions to use reflection and attributes
+// automate property change triggers.
+
+
 public class PropertyChangeNotifier : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -148,9 +156,9 @@ public class PropertyChangeNotifier : INotifyPropertyChanged
 
     public PropertyChangeNotifier()
     {
-        CollectPropertyTriggers();
-        CollectFunctionTriggers();
-        CollectCommandTriggers();
+        this.CollectPropertyTriggers();
+        this.CollectFunctionTriggers();
+        this.CollectCommandTriggers();
     }
 }
 

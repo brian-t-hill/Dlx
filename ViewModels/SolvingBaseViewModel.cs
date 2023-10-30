@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,12 +101,17 @@ public abstract class SolvingBaseViewModel : PropertyChangeNotifier
 
     [NotifiesWith(nameof(SolverElapsedSeconds))]
     [NotifiesWith(nameof(Solutions))]
-    public string SolutionCount => m_progressMetrics.SolutionCount == 0 ? string.Empty : $"Solutions found: {m_progressMetrics.SolutionCount:n0}";
+    public string SolutionCount => m_progressMetrics.SolutionCount == 0 ? string.Empty : string.Format(LocalizableStrings.idsSolutionsFoundFormat, m_progressMetrics.SolutionCount);
 
 
     [NotifiesWith(nameof(SolverElapsedSeconds))]
     [NotifiesWith(nameof(Solutions))]
-    public string RowsRemovedCount => m_progressMetrics.RowsRemoved == 0 ? string.Empty : $"Rows removed: {m_progressMetrics.RowsRemoved:n0}";
+    public string RowsRemovedCount => m_progressMetrics.RowsRemoved == 0 ? string.Empty : string.Format(LocalizableStrings.idsRowsRemovedFormat, m_progressMetrics.RowsRemoved);
+
+
+    [NotifiesWith(nameof(SolverElapsedSeconds))]
+    [NotifiesWith(nameof(Solutions))]
+    public string RecursivePassesCount => m_progressMetrics.RecursivePasses == 0 ? string.Empty : string.Format(LocalizableStrings.idsRecursivePassesFormat, m_progressMetrics.RecursivePasses);
 
 
     [CalledWhenPropertyChanges(nameof(Solutions))]

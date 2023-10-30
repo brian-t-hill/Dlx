@@ -35,6 +35,12 @@
 
             <TextBlock
                 Margin="0,10,0,0"
+                Text="{Binding RecursivePassesCount}"
+                FontSize="18"
+                />
+
+            <TextBlock
+                Margin="0,10,0,0"
                 Text="{Binding RowsRemovedCount}"
                 FontSize="18"
                 />

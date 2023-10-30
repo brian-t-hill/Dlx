@@ -18,14 +18,14 @@ public class Dlx
     [System.Diagnostics.DebuggerDisplay("column = {m_column.m_name}, row = {m_row}")]
     private class Node
     {
+        public int m_row;
+
+        public ColumnNode m_column;
+
         public Node m_left;
         public Node m_right;
         public Node m_above;
         public Node m_below;
-
-        public ColumnNode m_column;
-
-        public int m_row;
 
         public Node(ColumnNode column, int row)
         {
@@ -43,9 +43,9 @@ public class Dlx
     [System.Diagnostics.DebuggerDisplay("column = {m_name}, size = {m_size}")]
     private class ColumnNode : Node
     {
-        public string m_name;
+        public string m_name;  // Just for convenience
 
-        public int m_size;
+        public int m_size;  // How many regular nodes are in this column
 
         public ColumnNode(string name)
             : base(null!, -1)
@@ -53,7 +53,7 @@ public class Dlx
             m_name = name;
             m_size = 0;
 
-            m_column = this;  // column header nodes point to themselves
+            m_column = this;
         }
     }
 
@@ -69,16 +69,20 @@ public class Dlx
 
         private long m_rowsRemoved = 0;
 
-        // Count to be read by anybody, written only by Dlx solver.
         public long RowsRemoved { get => m_rowsRemoved; set => m_rowsRemoved = value; }
+
+
+        private long m_recursivePasses = 0;
+
+        public long RecursivePasses { get => m_recursivePasses; set => m_recursivePasses = value; }
     }
 
 
     private readonly ColumnNode m_root = new("root");
 
-    private readonly HashSet<int> m_solution = new();  // current solution in progress
+    private readonly HashSet<int> m_workingSolution = new();  // current solution in progress
 
-    private readonly List<HashSet<int>> m_solutions = new();  // All solutions found
+    private readonly List<HashSet<int>> m_confirmedSolutions = new();  // All solutions found
 
 
     private Dlx(bool[/* col */, /* row */] matrix)
@@ -122,27 +126,27 @@ public class Dlx
     }
 
 
-    private static void LinkNodeToRow(Node appendTo, Node nodeToAppend)
+    private static void LinkNodeToRow(Node neighborToLeft, Node nodeToAdd)
     {
-        nodeToAppend.m_left = appendTo;
-        nodeToAppend.m_right = appendTo.m_right;
-        appendTo.m_right.m_left = nodeToAppend;
-        appendTo.m_right = nodeToAppend;
+        nodeToAdd.m_left = neighborToLeft;
+        nodeToAdd.m_right = neighborToLeft.m_right;
+        neighborToLeft.m_right.m_left = nodeToAdd;
+        neighborToLeft.m_right = nodeToAdd;
     }
 
 
-    private static void LinkNodeToColumn(Node appendTo, Node nodeToAppend)
+    private static void LinkNodeToColumn(Node neighborAbove, Node nodeToAdd)
     {
-        nodeToAppend.m_above = appendTo;
-        nodeToAppend.m_below = appendTo.m_below;
-        appendTo.m_below.m_above = nodeToAppend;
-        appendTo.m_below = nodeToAppend;
+        nodeToAdd.m_above = neighborAbove;
+        nodeToAdd.m_below = neighborAbove.m_below;
+        neighborAbove.m_below.m_above = nodeToAdd;
+        neighborAbove.m_below = nodeToAdd;
 
-        ++appendTo.m_column.m_size;
+        ++neighborAbove.m_column.m_size;
     }
 
 
-    private static void Cover(ColumnNode column, ProgressMetrics progressMetrics)
+    private static void CoverColumn(ColumnNode column, ProgressMetrics progressMetrics)
     {
         // unlink column
         column.m_right.m_left = column.m_left;
@@ -166,7 +170,7 @@ public class Dlx
     }
 
 
-    private static void Uncover(ColumnNode column)
+    private static void UncoverColumn(ColumnNode column)
     {
         // for each row in the column, in reverse order
         for (Node row = column.m_above; row != column; row = row.m_above)
@@ -206,16 +210,20 @@ public class Dlx
     }
 
 
+    // Search, the recursive function
+    //
     private void Search(ProgressMetrics progressMetrics, CancellationToken cancelToken)
     {
+        ++progressMetrics.RecursivePasses;
+
         if (cancelToken.IsCancellationRequested)
             return;
 
         if (m_root.m_right == m_root)
         {
-            // Since there are no more columns, we must have covered everything.
+            // Since there are no more columns, we must have covered everything successfully.
 
-            m_solutions.Add(m_solution.ToHashSet());
+            m_confirmedSolutions.Add(m_workingSolution.ToHashSet());
             ++progressMetrics.SolutionCount;
 
             return;
@@ -228,35 +236,38 @@ public class Dlx
         if (column.m_size == 0)
             return;  // No more options in this column, so this search is a bust.
 
-        Cover(column, progressMetrics);
+        CoverColumn(column, progressMetrics);
 
         for (Node row = column.m_below; row != column; row = row.m_below)
         {
             if (cancelToken.IsCancellationRequested)
                 break;
 
-            m_solution.Add(row.m_row);  // propose a solution
+            m_workingSolution.Add(row.m_row);  // propose a solution
 
             // for each node in the row
-            for (Node right = row.m_right; right != row; right = right.m_right)
+            for (Node nodeInRow = row.m_right; nodeInRow != row; nodeInRow = nodeInRow.m_right)
             {
-                Cover(right.m_column, progressMetrics);  // Cover the column
+                CoverColumn(nodeInRow.m_column, progressMetrics);  // Cover the column
             }
 
             this.Search(progressMetrics, cancelToken);  // recurse
 
             // backtrack (reject the proposed solution)
-            m_solution.Remove(row.m_row);
+            m_workingSolution.Remove(row.m_row);
             column = row.m_column;
 
             // for each node in reverse order
-            for (Node left = row.m_left; left != row; left = left.m_left)
+            for (Node nodeInRow = row.m_left; nodeInRow != row; nodeInRow = nodeInRow.m_left)
             {
-                Uncover(left.m_column);  // Uncover the column
+                UncoverColumn(nodeInRow.m_column);  // Uncover the column
             }
         }
 
-        Uncover(column);
+        // We've exhausted all the rows and still haven't covered all the columns, so this
+        // combination's a bust.
+
+        UncoverColumn(column);
     }
 
 
@@ -268,7 +279,7 @@ public class Dlx
         Dlx dlx = new(matrix);
         dlx.Search(progressMetrics, cancelToken);
 
-        return dlx.m_solutions;
+        return dlx.m_confirmedSolutions;
     }
 
 
