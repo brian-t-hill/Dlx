@@ -59,7 +59,7 @@ public class SudokuViewModel : SolvingBaseViewModel
         this.ResetCancellationTokenSource();
 
         int[/* row */][/* col */] boardInputs = this.InputSudokuControlViewModel.CreateMatrix9x9InputsFromBoard();
-        m_sudokuMatrix = Algorithms.SudokuMatrix.MakeMatrixFor9x9(boardInputs);
+        m_sudokuMatrix = Algorithms.SudokuMatrix.MakeMatrix(boardInputs);
 
         CancellationToken cancelToken = this.SolverCancellationToken;
 

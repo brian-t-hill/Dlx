@@ -11,16 +11,23 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Pentomino.Algorithms;
 
+// Sudoku is defined by the number of digits.  If we use the digits 1-9,
+// then our board is nine units wide and nine units tall.  Furthermore,
+// the number of digits should be a square number so that we can divide
+// the board into boxes.  Nine digits means three boxes across and three
+// boxes down.
+
+
 public static class SudokuMatrix
 {
-    // row [1,dimension], column [1,dimension], digit [1,dimension]
+    // row [1..dimension], column [1..dimension], digit [1..dimension]
     private static int GetRowIndex(int dimension, int row, int column, int digit)
     {
         return (row - 1) * dimension * dimension + (column - 1) * dimension + (digit - 1);
     }
 
 
-    // row [1,dimension], column [1,dimension], digit [1,dimension]
+    // row [1..dimension], column [1..dimension], digit [1..dimension]
     private static (int Row, int Column, int Digit) GetRowColumnDigitFromRowIndex(int dimension, int rowIndex)
     {
         int digit = (rowIndex % dimension) + 1;
@@ -31,21 +38,72 @@ public static class SudokuMatrix
     }
 
 
-    public static bool[/* col */, /* row */] MakePlainMatrixFor9x9()
+    private static int GetNumberOfColumnsForDimension(int dimension)
     {
-        bool[,] matrix = new bool[k_NumberOfMatrixColumns_9x9, k_NumberOfMatrixRows_9x9];
+        // We need d*d columns for the row/column constraint.
+        // We need d*d columns for the row/digit constraint.
+        // We need d*d columns for the column/digit constraint.
+        // We need d*d columns for the box/digit constraint.
+
+        return dimension * dimension * 4;
+    }
+
+
+    private static int GetNumberOfRowsForDimension(int dimension)
+    {
+        // Each row and column can have any of the digits.
+        // The number of rows is equal to the dimension.
+        // So is the number of columns.
+        // So is the number of digits.
+
+        return dimension * dimension * dimension;
+    }
+
+
+    private static int GetDimensionFromNumberOfColumns(int numberOfColumns)
+    {
+        // We need d*d columns for the row/column constraint.
+        // We need d*d columns for the row/digit constraint.
+        // We need d*d columns for the column/digit constraint.
+        // We need d*d columns for the box/digit constraint.
+
+        return (int) Math.Sqrt(numberOfColumns / 4);
+    }
+
+
+    private static int GetDimensionFromNumberOfRows(int numberOfRows)
+    {
+        // Each row and column can have any of the digits.
+        // The number of rows is equal to the dimension.
+        // So is the number of columns.
+        // So is the number of digits.
+
+        // 1/3 can't be represented exactly in binary, so we won't get the exact answer we want.
+        // We can fix it with a little rounding.
+
+        return (int) Math.Round(Math.Pow(numberOfRows, 1.0 / 3.0));
+    }
+
+
+    public static bool[/* col */, /* row */] MakePlainMatrix(int dimension)
+    {
+        int numberOfColumns = GetNumberOfColumnsForDimension(dimension);
+        int numberOfRows = GetNumberOfRowsForDimension(dimension);
+        int boxDimension = (int) Math.Sqrt(dimension);
+
+        bool[,] matrix = new bool[numberOfColumns, numberOfRows];
 
         int column = 0;
 
         // row-column constraints
 
-        for (int y = 1; y <= 9; ++y)
+        for (int y = 1; y <= dimension; ++y)
         {
-            for (int x = 1; x <= 9; ++x)
+            for (int x = 1; x <= dimension; ++x)
             {
-                for (int d = 1; d <= 9; ++d)
+                for (int d = 1; d <= dimension; ++d)
                 {
-                    matrix[column, GetRowIndex(9, y, x, d)] = true;
+                    matrix[column, GetRowIndex(dimension, y, x, d)] = true;
                 }
 
                 ++column;
@@ -54,13 +112,13 @@ public static class SudokuMatrix
 
         // row-digit constraints
 
-        for (int y = 1; y <= 9; ++y)
+        for (int y = 1; y <= dimension; ++y)
         {
-            for (int d = 1; d <= 9; ++d)
+            for (int d = 1; d <= dimension; ++d)
             {
-                for (int x = 1; x <= 9; ++x)
+                for (int x = 1; x <= dimension; ++x)
                 {
-                    matrix[column, GetRowIndex(9, y, x, d)] = true;
+                    matrix[column, GetRowIndex(dimension, y, x, d)] = true;
                 }
 
                 ++column;
@@ -69,13 +127,13 @@ public static class SudokuMatrix
 
         // column-digit constraints
 
-        for (int x = 1; x <= 9; ++x)
+        for (int x = 1; x <= dimension; ++x)
         {
-            for (int d = 1; d <= 9; ++d)
+            for (int d = 1; d <= dimension; ++d)
             {
-                for (int y = 1; y <= 9; ++y)
+                for (int y = 1; y <= dimension; ++y)
                 {
-                    matrix[column, GetRowIndex(9, y, x, d)] = true;
+                    matrix[column, GetRowIndex(dimension, y, x, d)] = true;
                 }
 
                 ++column;
@@ -84,17 +142,17 @@ public static class SudokuMatrix
 
         // box-digit constraints
 
-        for (int boxY = 1; boxY <= 9; boxY += 3)
+        for (int boxY = 1; boxY <= dimension; boxY += boxDimension)
         {
-            for (int boxX = 1; boxX <= 9; boxX += 3)
+            for (int boxX = 1; boxX <= dimension; boxX += boxDimension)
             {
-                for (int d = 1; d <= 9; ++d)
+                for (int d = 1; d <= dimension; ++d)
                 {
-                    for (int deltaY = 0; deltaY < 3; ++deltaY)
+                    for (int deltaY = 0; deltaY < boxDimension; ++deltaY)
                     {
-                        for (int deltaX = 0; deltaX < 3; ++deltaX)
+                        for (int deltaX = 0; deltaX < boxDimension; ++deltaX)
                         {
-                            matrix[column, GetRowIndex(9, boxY + deltaY, boxX + deltaX, d)] = true;
+                            matrix[column, GetRowIndex(dimension, boxY + deltaY, boxX + deltaX, d)] = true;
                         }
                     }
 
@@ -107,13 +165,19 @@ public static class SudokuMatrix
     }
 
 
-    public static bool[/* col */, /* row */] MakeMatrixFor9x9(int[/* row */][/* col */] inputs)
+    public static bool[/* col */, /* row */] MakeMatrix(int[/* row */][/* col */] inputs)
     {
-        bool[,] matrix = MakePlainMatrixFor9x9();
+        int dimension = inputs.Length;
 
-        for (int y = 1; y <= 9; ++y)
+        int numberOfColumns = GetNumberOfColumnsForDimension(dimension);
+
+        bool[,] matrix = MakePlainMatrix(dimension);
+
+        for (int y = 1; y <= dimension; ++y)
         {
-            for (int x = 1; x <= 9; ++x)
+            Debug.Assert(inputs[y - 1].Length == dimension);
+
+            for (int x = 1; x <= dimension; ++x)
             {
                 int inputDigit = inputs[y - 1][x - 1];
 
@@ -121,13 +185,13 @@ public static class SudokuMatrix
                 {
                     // zero out the constraints columns
 
-                    for (int d = 1; d <= 9; ++d)
+                    for (int d = 1; d <= dimension; ++d)
                     {
                         if (d != inputDigit)
                         {
-                            for (int column = 0; column < k_NumberOfMatrixColumns_9x9; ++column)
+                            for (int column = 0; column < numberOfColumns; ++column)
                             {
-                                matrix[column, GetRowIndex(9, y, x, d)] = false;
+                                matrix[column, GetRowIndex(dimension, y, x, d)] = false;
                             }
                         }
                     }
@@ -141,16 +205,19 @@ public static class SudokuMatrix
 
     public static int[/* row */][/* col */] MakeOutputsFromSolution(HashSet<int> solution, bool[/* col */, /* row */] matrix)
     {
-        int[/* row */][/* col */] output = new int[9][];
+        int dimension = GetDimensionFromNumberOfColumns(matrix.GetLength(0));
+        Debug.Assert(dimension == GetDimensionFromNumberOfRows(matrix.GetLength(1)));
 
-        for (int y = 0; y < 9; ++y)
+        int[/* row */][/* col */] output = new int[dimension][];
+
+        for (int y = 0; y < dimension; ++y)
         {
-            output[y] = new int[9];
+            output[y] = new int[dimension];
         }
 
         foreach (int solutionRow in solution)
         {
-            (int row, int column, int digit) = GetRowColumnDigitFromRowIndex(9, solutionRow);
+            (int row, int column, int digit) = GetRowColumnDigitFromRowIndex(dimension, solutionRow);
 
             output[row - 1][column - 1] = digit;
         }
@@ -159,8 +226,5 @@ public static class SudokuMatrix
     }
 
 
-    private const int k_NumberOfMatrixColumns_9x9 = 324;
-    private const int k_NumberOfMatrixRows_9x9 = 729;
-
-
 }
+
