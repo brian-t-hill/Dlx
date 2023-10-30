@@ -69,6 +69,8 @@ public static class PentominoMatrix
     private const int k_NumberOfMatrixRows_10x6 = k_F_Rows_10x6 + k_L_Rows_10x6 + k_I_Rows_10x6 + k_P_Rows_10x6 + k_S_Rows_10x6 + k_T_Rows_10x6 +
                                             k_U_Rows_10x6 + k_V_Rows_10x6 + k_W_Rows_10x6 + k_X_Rows_10x6 + k_Y_Rows_10x6 + k_Z_Rows_10x6;
 
+    private const int k_pieceSize = 5;
+
 
     private static int AddShapeToMatrix(
         int shapeWidth,
@@ -110,9 +112,9 @@ public static class PentominoMatrix
     }
 
 
-    private static int[] GetHomePositions10x6(bool[][] shape)
+    private static int[] GetHomePositions(bool[][] shape, int boardWidth)
     {
-        int[] homePositions = new int[5];
+        int[] homePositions = new int[k_pieceSize];
         int nextPosition = 0;
 
         for (int y = 0; y < shape.Length; ++y)
@@ -121,7 +123,7 @@ public static class PentominoMatrix
             {
                 if (shape[y][x])
                 {
-                    homePositions[nextPosition++] = y * 10 + x + k_firstBoardPosition;
+                    homePositions[nextPosition++] = y * boardWidth + x + k_firstBoardPosition;
                 }
             }
         }
@@ -232,14 +234,15 @@ public static class PentominoMatrix
                     (shapeGeometry, placementMetadata) = FlipShape(shapeGeometry, placementMetadata);
                 }
 
-                int[] home = GetHomePositions10x6(shapeGeometry);
+                int[] home = GetHomePositions(shapeGeometry, boardWidth);
                 rowsAdded += AddShapeToMatrix(shapeGeometry[0].Length, shapeGeometry.Length, boardWidth, boardHeight, home, matrix, placementMetadata, allPlacementMetadata, startingRow + rowsAdded);
 
                 if (ShapeOrientations[shapeIndex].Rotate90)
                 {
+                    // 90 degrees
+
                     (bool[][] rotatedGeometry, PlacementMetadata rotatedMetadata) = RotateShape(shapeGeometry, placementMetadata);
-                    home = GetHomePositions10x6(rotatedGeometry);
-                    // TODO:  rotate basePlacementMetadata
+                    home = GetHomePositions(rotatedGeometry, boardWidth);
                     rowsAdded += AddShapeToMatrix(rotatedGeometry[0].Length, rotatedGeometry.Length, boardWidth, boardHeight, home, matrix, rotatedMetadata, allPlacementMetadata, startingRow + rowsAdded);
 
                     if (ShapeOrientations[shapeIndex].Rotate180)
@@ -247,15 +250,13 @@ public static class PentominoMatrix
                         // 180 degrees
 
                         (rotatedGeometry, rotatedMetadata) = RotateShape(rotatedGeometry, rotatedMetadata);
-                        home = GetHomePositions10x6(rotatedGeometry);
-                        // TODO:  rotate basePlacementMetadata
+                        home = GetHomePositions(rotatedGeometry, boardWidth);
                         rowsAdded += AddShapeToMatrix(rotatedGeometry[0].Length, rotatedGeometry.Length, boardWidth, boardHeight, home, matrix, rotatedMetadata, allPlacementMetadata, startingRow + rowsAdded);
 
                         // 270 degrees
 
                         (rotatedGeometry, rotatedMetadata) = RotateShape(rotatedGeometry, rotatedMetadata);
-                        home = GetHomePositions10x6(rotatedGeometry);
-                        // TODO:  rotate basePlacementMetadata
+                        home = GetHomePositions(rotatedGeometry, boardWidth);
                         rowsAdded += AddShapeToMatrix(rotatedGeometry[0].Length, rotatedGeometry.Length, boardWidth, boardHeight, home, matrix, rotatedMetadata, allPlacementMetadata, startingRow + rowsAdded);
                     }
                 }
