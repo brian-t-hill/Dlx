@@ -32,7 +32,9 @@ public class Dlx
             m_row = row;
             m_column = column;
 
-            // All connecting references point to ourself, initially.
+            // All connecting references point to ourself, initially.  That makes sense, since rows and columns wrap around.  
+            // So a lone node wraps around to itself.
+
             m_left = m_right = m_above = m_below = this;
         }
     }
@@ -65,55 +67,55 @@ public class Dlx
     }
 
 
-    private readonly ColumnNode m_root;
+    private readonly ColumnNode m_root = new("root");
 
-    private readonly HashSet<int> m_solution;  // current solution in progress
+    private readonly HashSet<int> m_solution = new();  // current solution in progress
 
-    private readonly List<HashSet<int>> m_solutions;  // All solutions found
+    private readonly List<HashSet<int>> m_solutions = new();  // All solutions found
+
 
     private Dlx(bool[/* col */, /* row */] matrix)
     {
-        m_root = new("root");
-        m_solution = new();
-        m_solutions = new();
-
         int numberOfColumns = matrix.GetLength(0);
-
         ColumnNode[] columns = new ColumnNode[numberOfColumns];
+
+        // Create the column header nodes
 
         for (int jj = 0; jj < numberOfColumns; ++jj)
         {
             columns[jj] = new(jj.ToString());
-            AppendNodeToRow(m_root.m_left, columns[jj]);
+            LinkNodeToRow(m_root.m_left, columns[jj]);
         }
+
+        // Add all the matrix values as nodes
 
         int numberOfRows = matrix.GetLength(1);
 
         for (int jj = 0; jj < numberOfRows; ++jj)
         {
-            Node? mostRecentInRow = null;
+            Node? mostRecentNodeInCurrentRow = null;
 
             for (int kk = 0; kk < numberOfColumns; ++kk)
             {
                 if (matrix[kk, jj] == true)  // We only create nodes for cells that contain a value
                 {
-                    Node node = new(columns[kk], jj);
+                    ColumnNode columnHeader = columns[kk];
 
-                    AppendNodeToColumn(columns[kk].m_above, node);
+                    Node node = new(columnHeader, jj);
 
-                    ++columns[kk].m_size;
+                    LinkNodeToColumn(columnHeader.m_above, node);
 
-                    if (mostRecentInRow is not null)
-                        AppendNodeToRow(mostRecentInRow, node);
+                    if (mostRecentNodeInCurrentRow is not null)
+                        LinkNodeToRow(mostRecentNodeInCurrentRow, node);
 
-                    mostRecentInRow = node;
+                    mostRecentNodeInCurrentRow = node;
                 }
             }
         }
     }
 
 
-    private static void AppendNodeToRow(Node appendTo, Node nodeToAppend)
+    private static void LinkNodeToRow(Node appendTo, Node nodeToAppend)
     {
         nodeToAppend.m_left = appendTo;
         nodeToAppend.m_right = appendTo.m_right;
@@ -122,12 +124,14 @@ public class Dlx
     }
 
 
-    private static void AppendNodeToColumn(Node appendTo, Node nodeToAppend)
+    private static void LinkNodeToColumn(Node appendTo, Node nodeToAppend)
     {
         nodeToAppend.m_above = appendTo;
         nodeToAppend.m_below = appendTo.m_below;
         appendTo.m_below.m_above = nodeToAppend;
         appendTo.m_below = nodeToAppend;
+
+        ++appendTo.m_column.m_size;
     }
 
 
@@ -159,13 +163,13 @@ public class Dlx
         for (Node row = column.m_above; row != column; row = row.m_above)
         {
             // for each node in the row, in reverse order
-            for (Node left = row.m_left; left != row; left = left.m_left)
+            for (Node node = row.m_left; node != row; node = node.m_left)
             {
-                ++left.m_column.m_size;
+                ++node.m_column.m_size;
 
                 // relink the node
-                left.m_above.m_below = left;
-                left.m_below.m_above = left;
+                node.m_above.m_below = node;
+                node.m_below.m_above = node;
             }
         }
 
@@ -193,7 +197,7 @@ public class Dlx
     }
 
 
-    private void Search(CancellationToken cancelToken, ProgressCount progressCount)
+    private void Search(ProgressCount progressCount, CancellationToken cancelToken)
     {
         if (cancelToken.IsCancellationRequested)
             return;
@@ -208,7 +212,8 @@ public class Dlx
             return;
         }
 
-        // Otherwise, we need to keep looking.
+        // Otherwise, we need to keep looking.  We'll start by considering the column with the
+        // fewest values in it.  This will allow us to rule out bad rows more quickly.
 
         ColumnNode column = this.FindSmallestColumn();
         if (column.m_size == 0)
@@ -229,7 +234,7 @@ public class Dlx
                 Cover(right.m_column);  // Cover the column
             }
 
-            this.Search(cancelToken, progressCount);  // recurse
+            this.Search(progressCount, cancelToken);  // recurse
 
             // backtrack (reject the proposed solution)
             m_solution.Remove(row.m_row);
@@ -252,7 +257,7 @@ public class Dlx
         progressCount.Count = 0;
 
         Dlx dlx = new(matrix);
-        dlx.Search(cancelToken, progressCount);
+        dlx.Search(progressCount, cancelToken);
 
         return dlx.m_solutions;
     }

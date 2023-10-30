@@ -69,34 +69,42 @@ public class PentominoViewModel : SolvingBaseViewModel
 
             new Polygon()
             {
-                // . . . L
-                // L L L L
+                // L .
+                // L .
+                // L .
+                // L L
 
-                Points = new() { new(300, 0), new(400, 0), new(400, 200), new(00, 200), new(0, 100), new(300, 100) },
+                Points = new() { new(0, 0), new(100, 0), new(100, 300), new(200, 300), new(200, 400), new(0, 400) },
             },
 
             new Polygon()
             {
-                // I I I I I
+                // I
+                // I
+                // I
+                // I
+                // I
 
-                Points = new() { new(0, 0), new(500, 0), new(500, 100), new(0, 100) },
+                Points = new() { new(0, 0), new(100, 0), new(100, 500), new(0, 500) },
             },
 
             new Polygon()
             {
+                // P P
+                // P P
                 // P .
-                // P P
-                // P P
 
-                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 300), new(0, 300) },
+                Points = new() { new(0, 0), new(200, 0), new(200, 200), new(100, 200), new(100, 300), new(0, 300) },
             },
 
             new Polygon()
             {
-                // . . S S
-                // S S S .
+                // S
+                // S S
+                // . S
+                // . S
 
-                Points = new() { new(200, 0), new(400, 0), new(400, 100), new(300, 100), new(300, 200), new(0, 200), new(0, 100), new(200, 100) },
+                Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 400), new(100, 400), new(100, 200), new(0, 200) },
             },
 
             new Polygon()
@@ -207,7 +215,7 @@ public class PentominoViewModel : SolvingBaseViewModel
     private static Transform GetRotateAndScaleTransformsFromMetadata(PlacementMetadata metadata)
     {
         RotateTransform? rotation = (metadata.Angle != 0 ? new RotateTransform { Angle = metadata.Angle } : null);
-        ScaleTransform? scale = (metadata.ScaleX != 1 || metadata.ScaleY != 1 ? new ScaleTransform { ScaleX = metadata.ScaleX, ScaleY = metadata.ScaleY } : null);
+        ScaleTransform? scale = (metadata.Flip ? new ScaleTransform { ScaleX = -1.0, ScaleY = 1.0 } : null);
 
         int count = (rotation is null ? 0 : 1) + (scale is null ? 0 : 1);
 
@@ -219,11 +227,11 @@ public class PentominoViewModel : SolvingBaseViewModel
 
         TransformGroup transformGroup = new();
 
-        if (rotation is not null)
-            transformGroup.Children.Add(rotation);
-
         if (scale is not null)
             transformGroup.Children.Add(scale);
+
+        if (rotation is not null)
+            transformGroup.Children.Add(rotation);
 
         return transformGroup;
     }

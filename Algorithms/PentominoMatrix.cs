@@ -4,12 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Pentomino.Algorithms;
 
 public static class PentominoMatrix
 {
-    public record PlacementMetadata(int Piece, int Angle, double LeftAdjust, double TopAdjust, int ScaleX, int ScaleY);
+    public record PlacementMetadata(int Piece, int Angle, double LeftAdjust, double TopAdjust, bool Flip);
 
     public static bool[/* col */, /* row */] MakeMatrixFor10x6()
     {
@@ -24,61 +25,14 @@ public static class PentominoMatrix
         // The board is 10 wide and 6 tall.  The positions run
         // in reading order (left to right, top to bottom).
 
-        // The notation we use for the pentomino pieces are FLIP STUVWXYZ
+        // The notation we use for the pentomino pieces is FLIP STUVWXYZ
 
         bool[,] matrix = new bool[k_NumberOfMatrixColumns_10x6, k_NumberOfMatrixRows_10x6];
 
         PlacementMetadata[] allPlacementMetadata = new PlacementMetadata[k_NumberOfMatrixRows_10x6];
 
-        int rowsAdded = 0;
-
-        int rowsAddedForShape = AddFToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_F_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddLToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_L_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddIToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_I_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddPToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_P_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddSToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_S_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddTToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_T_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddUToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_U_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddVToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_V_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddWToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_W_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddXToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_X_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddYToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_Y_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
-
-        rowsAddedForShape = AddZToMatrix(10, 6, matrix, allPlacementMetadata, rowsAdded);
-        Debug.Assert(rowsAddedForShape == k_Z_Rows_10x6);
-        rowsAdded += rowsAddedForShape;
+        int rowsAdded = AddAllShapesToMatrix(10, 6, matrix, allPlacementMetadata);
+        Debug.Assert(rowsAdded == k_NumberOfMatrixRows_10x6);
 
         return (matrix, allPlacementMetadata);
     }
@@ -139,8 +93,7 @@ public static class PentominoMatrix
                     Angle: basePlacementMetadata.Angle,
                     LeftAdjust: basePlacementMetadata.LeftAdjust + columnVariant,
                     TopAdjust: basePlacementMetadata.TopAdjust + rowVariant,
-                    ScaleX: basePlacementMetadata.ScaleX,
-                    ScaleY: basePlacementMetadata.ScaleY);
+                    Flip: basePlacementMetadata.Flip);
 
                 matrix[basePlacementMetadata.Piece, startingRow + (rowVariant * columnVariants) + columnVariant] = true;  // Set the column for the shape itself.
 
@@ -157,598 +110,161 @@ public static class PentominoMatrix
     }
 
 
-    private static int AddFToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
+    private static int[] GetHomePositions10x6(bool[][] shape)
+    {
+        int[] homePositions = new int[5];
+        int nextPosition = 0;
+
+        for (int y = 0; y < shape.Length; ++y)
+        {
+            for (int x = 0; x < shape[y].Length; ++x)
+            {
+                if (shape[y][x])
+                {
+                    homePositions[nextPosition++] = y * 10 + x + k_firstBoardPosition;
+                }
+            }
+        }
+
+        return homePositions;
+    }
+
+
+    private static (bool[][] FlippedShape, PlacementMetadata FlippedMetadata) FlipShape(bool[][] shape, PlacementMetadata metadata)
+    {
+        bool[][] flipShape = new bool[shape.Length][];
+
+        for (int y = 0; y < shape.Length; ++y)
+        {
+            int width = shape[y].Length;
+
+            flipShape[y] = new bool[width];
+
+            for (int x = 0; x < width; ++x)
+            {
+                flipShape[y][x] = shape[y][width - x - 1];
+            }
+        }
+
+        PlacementMetadata flippedMetadata = new(metadata.Piece, metadata.Angle, metadata.LeftAdjust, metadata.TopAdjust, !metadata.Flip);
+
+        return (flipShape, flippedMetadata);
+    }
+
+
+    private static (bool[][] RotatedShape, PlacementMetadata rotatedMetadata) RotateShape(bool[][] shape, PlacementMetadata metadata)  // rotate clockwise 90 degrees
+    {
+        int originalHeight = shape.Length;
+        int newWidth = originalHeight;
+
+        int originalWidth = shape[0].Length;
+        int newHeight = originalWidth;
+
+        bool[][] rotatedShape = new bool[newHeight][];
+
+        for (int y = 0; y < newHeight; ++y)
+        {
+            rotatedShape[y] = new bool[newWidth];
+
+            for (int x = 0; x < newWidth; ++x)
+            {
+                rotatedShape[y][x] = shape[originalHeight - x - 1][y];
+            }
+        }
+
+        (double oldCenterX, double oldCenterY) = (originalWidth / 2.0, originalHeight / 2.0);
+        (double newCenterX, double newCenterY) = (newWidth / 2.0, newHeight / 2.0);
+
+        PlacementMetadata rotatedMetadata = new(metadata.Piece, (metadata.Angle + 90) % 360, metadata.LeftAdjust + newCenterX - oldCenterX, metadata.TopAdjust + newCenterY - oldCenterY, metadata.Flip);
+
+        return (rotatedShape, rotatedMetadata);
+    }
+
+
+    private struct ShapeOrientationTraits
+    {
+        public int Shape { get; set; }
+
+        public bool Rotate90 { get; set; }
+
+        public bool Rotate180 { get; set; }
+
+        public bool Flip { get; set; }
+
+        public bool[][] Geometry { get; set; }
+    }
+
+    private static readonly ShapeOrientationTraits[] ShapeOrientations = new ShapeOrientationTraits[]
+    {
+        new() { Shape = k_F_Index,  Rotate90 = true,  Rotate180 = true,  Flip = true,  Geometry = new bool[][] { new bool[] { false, true, true }, new bool[] { true, true, false }, new bool[] { false, true, false } } },
+        new() { Shape = k_L_Index,  Rotate90 = true,  Rotate180 = true,  Flip = true,  Geometry = new bool[][] { new bool[] { true, false }, new bool[] { true, false }, new bool[] { true, false }, new bool[] { true, true } } },
+        new() { Shape = k_I_Index,  Rotate90 = true,  Rotate180 = false, Flip = false, Geometry = new bool[][] { new bool[] { true }, new bool[] { true }, new bool[] { true }, new bool[] { true }, new bool[] { true } } },
+        new() { Shape = k_P_Index,  Rotate90 = true,  Rotate180 = true,  Flip = true,  Geometry = new bool[][] { new bool[] { true, true }, new bool[] { true, true }, new bool[] { true, false } } },
+        new() { Shape = k_S_Index,  Rotate90 = true,  Rotate180 = true,  Flip = true,  Geometry = new bool[][] { new bool[] { true, false }, new bool[] { true, true }, new bool[] { false, true }, new bool[] { false, true } } },
+        new() { Shape = k_T_Index,  Rotate90 = true,  Rotate180 = true,  Flip = false, Geometry = new bool[][] { new bool[] { true, true, true }, new bool[] { false, true, false }, new bool[] { false, true, false } } },
+        new() { Shape = k_U_Index,  Rotate90 = true,  Rotate180 = true,  Flip = false, Geometry = new bool[][] { new bool[] { true, false, true }, new bool[] { true, true, true } } },
+        new() { Shape = k_V_Index,  Rotate90 = true,  Rotate180 = true,  Flip = false, Geometry = new bool[][] { new bool[] { true, false, false}, new bool[] { true, false, false }, new bool[] { true, true, true } } },
+        new() { Shape = k_W_Index,  Rotate90 = true,  Rotate180 = true,  Flip = false, Geometry = new bool[][] { new bool[] { true, false, false}, new bool[] { true, true, false }, new bool[] { false, true, true } } },
+        new() { Shape = k_X_Index,  Rotate90 = false, Rotate180 = false, Flip = false, Geometry = new bool[][] { new bool[] { false, true, false}, new bool[] { true, true, true }, new bool[] { false, true, false } } },
+        new() { Shape = k_Y_Index,  Rotate90 = true,  Rotate180 = true,  Flip = true,  Geometry = new bool[][] { new bool[] { false, false, true, false }, new bool[] { true, true, true, true } } },
+        new() { Shape = k_Z_Index,  Rotate90 = true,  Rotate180 = false, Flip = true,  Geometry = new bool[][] { new bool[] { true, true, false }, new bool[] { false, true, false }, new bool[] { false, true, true } } },
+    };
+
+
+    private static int AddAllShapesToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata)
     {
         int rowsAdded = 0;
+        int startingRow = 0;
 
-        //     13, 14,
-        // 22, 23,
-        //     33
+        for (int shapeIndex = k_F_Index; shapeIndex <= k_Z_Index; ++shapeIndex)
+        {
+            bool[][] shapeGeometry = ShapeOrientations[shapeIndex].Geometry;
+            PlacementMetadata placementMetadata = new(Piece: shapeIndex, Angle: 0, LeftAdjust: 0, TopAdjust: 0, Flip: false);
 
-        int[] home = new[] { 13, 14, 22, 23, 33 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_F_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
+            for (int twoPass = 0; twoPass < 2; ++twoPass)
+            {
 
-        // 12, 13,
-        //     23, 24,
-        //     33
+                if (twoPass > 0)
+                {
+                    if (!ShapeOrientations[shapeIndex].Flip)
+                        break;
 
-        home = new[] { 12, 13, 23, 24, 33 };
-        basePlacementMetadata = new(Piece: k_F_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
+                    (shapeGeometry, placementMetadata) = FlipShape(shapeGeometry, placementMetadata);
+                }
 
-        //     13,
-        // 22, 23, 24,
-        //         34
+                int[] home = GetHomePositions10x6(shapeGeometry);
+                rowsAdded += AddShapeToMatrix(shapeGeometry[0].Length, shapeGeometry.Length, boardWidth, boardHeight, home, matrix, placementMetadata, allPlacementMetadata, startingRow + rowsAdded);
 
-        home = new[] { 13, 22, 23, 24, 34 };
-        basePlacementMetadata = new(Piece: k_F_Index, Angle: 90, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
+                if (ShapeOrientations[shapeIndex].Rotate90)
+                {
+                    (bool[][] rotatedGeometry, PlacementMetadata rotatedMetadata) = RotateShape(shapeGeometry, placementMetadata);
+                    home = GetHomePositions10x6(rotatedGeometry);
+                    // TODO:  rotate basePlacementMetadata
+                    rowsAdded += AddShapeToMatrix(rotatedGeometry[0].Length, rotatedGeometry.Length, boardWidth, boardHeight, home, matrix, rotatedMetadata, allPlacementMetadata, startingRow + rowsAdded);
 
-        //     13,
-        // 22, 23, 24,
-        // 32
+                    if (ShapeOrientations[shapeIndex].Rotate180)
+                    {
+                        // 180 degrees
 
-        home = new[] { 13, 22, 23, 24, 32 };
-        basePlacementMetadata = new(Piece: k_F_Index, Angle: 90, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
+                        (rotatedGeometry, rotatedMetadata) = RotateShape(rotatedGeometry, rotatedMetadata);
+                        home = GetHomePositions10x6(rotatedGeometry);
+                        // TODO:  rotate basePlacementMetadata
+                        rowsAdded += AddShapeToMatrix(rotatedGeometry[0].Length, rotatedGeometry.Length, boardWidth, boardHeight, home, matrix, rotatedMetadata, allPlacementMetadata, startingRow + rowsAdded);
 
-        //     13,
-        //     23, 24,
-        // 32, 33
+                        // 270 degrees
 
-        home = new[] { 13, 23, 24, 32, 33 };
-        basePlacementMetadata = new(Piece: k_F_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        // 22, 23,
-        //     33, 34
-
-        home = new[] { 13, 22, 23, 33, 34 };
-        basePlacementMetadata = new(Piece: k_F_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12,
-        // 22, 23, 24,
-        //     33
-
-        home = new[] { 12, 22, 23, 24, 33 };
-        basePlacementMetadata = new(Piece: k_F_Index, Angle: -90, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //         14,
-        // 22, 23, 24,
-        //     33
-
-        home = new[] { 14, 22, 23, 24, 33 };
-        basePlacementMetadata = new(Piece: k_F_Index, Angle: -90, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
+                        (rotatedGeometry, rotatedMetadata) = RotateShape(rotatedGeometry, rotatedMetadata);
+                        home = GetHomePositions10x6(rotatedGeometry);
+                        // TODO:  rotate basePlacementMetadata
+                        rowsAdded += AddShapeToMatrix(rotatedGeometry[0].Length, rotatedGeometry.Length, boardWidth, boardHeight, home, matrix, rotatedMetadata, allPlacementMetadata, startingRow + rowsAdded);
+                    }
+                }
+            }
+        }
 
         return rowsAdded;
     }
 
-
-    private static int AddLToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12,
-        // 22,
-        // 32,
-        // 42, 43
-
-        int[] home = new[] { 12, 22, 32, 42, 43 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_L_Index, Angle: 90, LeftAdjust: -1, TopAdjust: 1, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        //     23,
-        //     33,
-        // 42, 43
-
-        home = new[] { 13, 23, 33, 42, 43 };
-        basePlacementMetadata = new(Piece: k_L_Index, Angle: 90, LeftAdjust: -1, TopAdjust: 1, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        // 22,
-        // 32,
-        // 42
-
-        home = new[] { 12, 13, 22, 32, 42 };
-        basePlacementMetadata = new(Piece: k_L_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        //     23,
-        //     33,
-        //     43
-
-        home = new[] { 12, 13, 23, 33, 43 };
-        basePlacementMetadata = new(Piece: k_L_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14, 15,
-        // 22
-
-        home = new[] { 12, 13, 14, 15, 22 };
-        basePlacementMetadata = new(Piece: k_L_Index, Angle: 180, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12,
-        // 22, 23, 24, 25
-
-        home = new[] { 12, 22, 23, 24, 25 };
-        basePlacementMetadata = new(Piece: k_L_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //             15,
-        // 22, 23, 24, 25
-
-        home = new[] { 15, 22, 23, 24, 25 };
-        basePlacementMetadata = new(Piece: k_L_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14, 15,
-        //             25
-
-        home = new[] { 12, 13, 14, 15, 25 };
-        basePlacementMetadata = new(Piece: k_L_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddIToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12,
-        // 22,
-        // 32,
-        // 42,
-        // 52
-
-        int[] home = new[] { 12, 22, 32, 42, 52 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_I_Index, Angle: 90, LeftAdjust: -2, TopAdjust: 2, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(1, 5, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14, 15, 16
-
-        home = new[] { 12, 13, 14, 15, 16 };
-        basePlacementMetadata = new(Piece: k_I_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(5, 1, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddPToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12, 13,
-        // 22, 23,
-        // 32
-
-        int[] home = new[] { 12, 13, 22, 23, 32 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_P_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(2, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        // 22, 23,
-        //     33
-
-        home = new[] { 12, 13, 22, 23, 33 };
-        basePlacementMetadata = new(Piece: k_P_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(2, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14,
-        //     23, 24
-
-        home = new[] { 12, 23, 14, 23, 24 };
-        basePlacementMetadata = new(Piece: k_P_Index, Angle: 90, LeftAdjust: 0.5, TopAdjust: -0.5, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14,
-        // 22, 23
-
-        home = new[] { 12, 13, 14, 22, 23 };
-        basePlacementMetadata = new(Piece: k_P_Index, Angle: 90, LeftAdjust: 0.5, TopAdjust: -0.5, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        // 22, 23,
-        // 32, 33
-
-        home = new[] { 13, 22, 23, 32, 33 };
-        basePlacementMetadata = new(Piece: k_P_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12,
-        // 22, 23,
-        // 32, 33
-
-        home = new[] { 12, 22, 23, 32, 33 };
-        basePlacementMetadata = new(Piece: k_P_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        // 22, 23, 24
-
-        home = new[] { 12, 13, 22, 23, 24 };
-        basePlacementMetadata = new(Piece: k_P_Index, Angle: 90, LeftAdjust: 0.5, TopAdjust: -0.5, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13, 14,
-        // 22, 23, 24,
-
-        home = new[] { 13, 14, 22, 23, 24 };
-        basePlacementMetadata = new(Piece: k_P_Index, Angle: -90, LeftAdjust: 0.5, TopAdjust: -0.5, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddSToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12,
-        // 22, 23,
-        //     33,
-        //     43
-
-        int[] home = new[] { 12, 22, 23, 33, 43 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_S_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        //     23,
-        // 32, 33,
-        // 42
-
-        home = new[] { 13, 23, 32, 33, 42 };
-        basePlacementMetadata = new(Piece: k_S_Index, Angle: 90, LeftAdjust: -1, TopAdjust: 1, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        // 22, 23,
-        // 32,
-        // 42
-
-        home = new[] { 13, 22, 23, 32, 42 };
-        basePlacementMetadata = new(Piece: k_S_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12,
-        // 22,
-        // 32, 33,
-        //     43
-
-        home = new[] { 12, 22, 32, 33, 43 };
-        basePlacementMetadata = new(Piece: k_S_Index, Angle: 90, LeftAdjust: -1, TopAdjust: 1, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //         14, 15,
-        // 22, 23, 24
-
-        home = new[] { 14, 15, 22, 23, 24 };
-        basePlacementMetadata = new(Piece: k_S_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        //     23, 24, 25
-
-        home = new[] { 12, 13, 23, 24, 25 };
-        basePlacementMetadata = new(Piece: k_S_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14,
-        //         24, 25
-
-        home = new[] { 12, 13, 14, 24, 25 };
-        basePlacementMetadata = new(Piece: k_S_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13, 14, 15,
-        // 22, 23
-
-        home = new[] { 13, 14, 15, 22, 23 };
-        basePlacementMetadata = new(Piece: k_S_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddTToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12, 13, 14,
-        //     23,
-        //     33
-
-        int[] home = new[] { 12, 13, 14, 23, 33 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_T_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //         14,
-        // 22, 23, 24,
-        //         34
-
-        home = new[] { 14, 22, 23, 24, 34 };
-        basePlacementMetadata = new(Piece: k_T_Index, Angle: 90, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12,
-        // 22, 23, 24,
-        // 32
-
-        home = new[] { 12, 22, 23, 24, 32 };
-        basePlacementMetadata = new(Piece: k_T_Index, Angle: -90, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        //     23,
-        // 32, 33, 34
-
-        home = new[] { 13, 23, 32, 33, 34 };
-        basePlacementMetadata = new(Piece: k_T_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddUToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12,     14,
-        // 22, 23, 24
-
-        int[] home = new[] { 12, 14, 22, 23, 24 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_U_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        // 22,
-        // 32, 33
-
-        home = new[] { 12, 13, 22, 32, 33 };
-        basePlacementMetadata = new(Piece: k_U_Index, Angle: 90, LeftAdjust: -0.5, TopAdjust: 0.5, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14,
-        // 22,     24
-
-        home = new[] { 12, 13, 14, 22, 24 };
-        basePlacementMetadata = new(Piece: k_U_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        //     23,
-        // 32, 33
-
-        home = new[] { 12, 13, 23, 32, 33 };
-        basePlacementMetadata = new(Piece: k_U_Index, Angle: -90, LeftAdjust: -0.5, TopAdjust: 0.5, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddVToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12,
-        // 22,
-        // 32, 33, 34
-
-        int[] home = new[] { 12, 22, 32, 33, 34 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_V_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14
-        // 22,
-        // 32
-
-        home = new[] { 12, 13, 14, 22, 32 };
-        basePlacementMetadata = new(Piece: k_V_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14,
-        //         24,
-        //         34
-
-        home = new[] { 12, 13, 14, 24, 34 };
-        basePlacementMetadata = new(Piece: k_V_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //         14,
-        //         24,
-        // 32, 33, 34
-
-        home = new[] { 14, 24, 32, 33, 34 };
-        basePlacementMetadata = new(Piece: k_V_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddWToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12,
-        // 22, 23,
-        //     33, 34
-
-        int[] home = new[] { 12, 22, 23, 33, 34 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_W_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13, 14,
-        // 22, 23,
-        // 32
-
-        home = new[] { 13, 14, 22, 23, 32 };
-        basePlacementMetadata = new(Piece: k_W_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13,
-        //     23, 24,
-        //         34
-
-        home = new[] { 12, 13, 23, 24, 34 };
-        basePlacementMetadata = new(Piece: k_W_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //         14,
-        //     23, 24,
-        // 32, 33
-
-        home = new[] { 14, 23, 24, 32, 33 };
-        basePlacementMetadata = new(Piece: k_W_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddXToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        //     13,
-        // 22, 23, 24
-        //     33
-
-        int[] home = new[] { 13, 22, 23, 24, 33 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_X_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddYToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        //     13,
-        // 22, 23,
-        //     33,
-        //     43
-
-        int[] home = new[] { 13, 22, 23, 33, 43 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_Y_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12,
-        // 22, 23,
-        // 32,
-        // 42
-
-        home = new[] { 12, 22, 23, 32, 42 };
-        basePlacementMetadata = new(Piece: k_Y_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        //     23,
-        // 32, 33,
-        //     43
-
-        home = new[] { 13, 23, 32, 33, 43 };
-        basePlacementMetadata = new(Piece: k_Y_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        // 22, 23,
-        //     33,
-        //     43
-
-        home = new[] { 13, 22, 23, 33, 43 };
-        basePlacementMetadata = new(Piece: k_Y_Index, Angle: -90, LeftAdjust: -1, TopAdjust: 1, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(2, 4, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //         14,
-        // 22, 23, 24, 25
-
-        home = new[] { 14, 22, 23, 24, 25 };
-        basePlacementMetadata = new(Piece: k_Y_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13,
-        // 22, 23, 24, 25
-
-        home = new[] { 13, 22, 23, 24, 25 };
-        basePlacementMetadata = new(Piece: k_Y_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14, 15,
-        //         24
-
-        home = new[] { 12, 13, 14, 15, 24 };
-        basePlacementMetadata = new(Piece: k_Y_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12, 13, 14, 15,
-        //     23
-
-        home = new[] { 12, 13, 14, 15, 23 };
-        basePlacementMetadata = new(Piece: k_Y_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: -1);
-        rowsAdded += AddShapeToMatrix(4, 2, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
-
-
-    private static int AddZToMatrix(int boardWidth, int boardHeight, bool[/* col */, /* row */] matrix, PlacementMetadata[] allPlacementMetadata, int startingRow)
-    {
-        int rowsAdded = 0;
-
-        // 12, 13,
-        //     23,
-        //     33, 34
-
-        int[] home = new[] { 12, 13, 23, 33, 34 };
-        PlacementMetadata basePlacementMetadata = new(Piece: k_Z_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //     13, 14,
-        //     23,
-        // 32, 33
-
-        home = new[] { 13, 14, 23, 32, 33 };
-        basePlacementMetadata = new(Piece: k_Z_Index, Angle: 0, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        //         14,
-        // 22, 23, 24,
-        // 32
-
-        home = new[] { 14, 22, 23, 24, 32 };
-        basePlacementMetadata = new(Piece: k_Z_Index, Angle: 90, LeftAdjust: 0, TopAdjust: 0, ScaleX: 1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        // 12,
-        // 22, 23, 24,
-        //         34
-
-        home = new[] { 12, 22, 23, 24, 34 };
-        basePlacementMetadata = new(Piece: k_Z_Index, Angle: 90, LeftAdjust: 0, TopAdjust: 0, ScaleX: -1, ScaleY: 1);
-        rowsAdded += AddShapeToMatrix(3, 3, boardWidth, boardHeight, home, matrix, basePlacementMetadata, allPlacementMetadata, startingRow + rowsAdded);
-
-        return rowsAdded;
-    }
 
     private static char GetShape(int row, bool[/* col */, /* row */] matrix)
     {
