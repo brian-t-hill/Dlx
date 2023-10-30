@@ -63,13 +63,13 @@ public class SudokuViewModel : SolvingBaseViewModel
 
         CancellationToken cancelToken = this.SolverCancellationToken;
 
-        m_progressCount = new();
+        m_progressMetrics = new();
         this.IsSolving = true;
         List<HashSet<int>>? solutions = null;
 
         await Task.Run(() =>
         {
-            solutions = Algorithms.Dlx.Solve(m_sudokuMatrix, cancelToken, m_progressCount);
+            solutions = Algorithms.Dlx.Solve(m_sudokuMatrix, cancelToken, m_progressMetrics);
         });
 
         this.IsSolving = false;

@@ -100,7 +100,12 @@ public abstract class SolvingBaseViewModel : PropertyChangeNotifier
 
     [NotifiesWith(nameof(SolverElapsedSeconds))]
     [NotifiesWith(nameof(Solutions))]
-    public string SolutionCount => m_progressCount.Count == 0 ? string.Empty : $"Solutions found: {m_progressCount.Count:n0}";
+    public string SolutionCount => m_progressMetrics.SolutionCount == 0 ? string.Empty : $"Solutions found: {m_progressMetrics.SolutionCount:n0}";
+
+
+    [NotifiesWith(nameof(SolverElapsedSeconds))]
+    [NotifiesWith(nameof(Solutions))]
+    public string RowsRemovedCount => m_progressMetrics.RowsRemoved == 0 ? string.Empty : $"Rows removed: {m_progressMetrics.RowsRemoved:n0}";
 
 
     [CalledWhenPropertyChanges(nameof(Solutions))]
@@ -119,7 +124,7 @@ public abstract class SolvingBaseViewModel : PropertyChangeNotifier
 
     private CancellationTokenSource m_solverCts = new();
 
-    protected Dlx.ProgressCount m_progressCount = new();
+    protected Dlx.ProgressMetrics m_progressMetrics = new();
 
 
     public CancellationToken SolverCancellationToken => m_solverCts.Token;

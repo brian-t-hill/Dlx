@@ -58,12 +58,19 @@ public class Dlx
     }
 
 
-    public class ProgressCount
+    public class ProgressMetrics
     {
-        private volatile int m_count = 0;
+        // Data to be read by anybody, written only by Dlx solver.
+
+        private long m_solutionCount = 0;
     
+        public long SolutionCount { get => m_solutionCount; set => m_solutionCount = value; }
+
+
+        private long m_rowsRemoved = 0;
+
         // Count to be read by anybody, written only by Dlx solver.
-        public int Count { get => m_count; set => m_count = value; }
+        public long RowsRemoved { get => m_rowsRemoved; set => m_rowsRemoved = value; }
     }
 
 
@@ -135,7 +142,7 @@ public class Dlx
     }
 
 
-    private static void Cover(ColumnNode column)
+    private static void Cover(ColumnNode column, ProgressMetrics progressMetrics)
     {
         // unlink column
         column.m_right.m_left = column.m_left;
@@ -144,6 +151,8 @@ public class Dlx
         // for each row in the column
         for (Node row = column.m_below; row != column; row = row.m_below)
         {
+            ++progressMetrics.RowsRemoved;
+
             // for each node in the row
             for (Node right = row.m_right; right != row; right = right.m_right)
             {
@@ -197,7 +206,7 @@ public class Dlx
     }
 
 
-    private void Search(ProgressCount progressCount, CancellationToken cancelToken)
+    private void Search(ProgressMetrics progressMetrics, CancellationToken cancelToken)
     {
         if (cancelToken.IsCancellationRequested)
             return;
@@ -207,7 +216,7 @@ public class Dlx
             // Since there are no more columns, we must have covered everything.
 
             m_solutions.Add(m_solution.ToHashSet());
-            ++progressCount.Count;
+            ++progressMetrics.SolutionCount;
 
             return;
         }
@@ -219,7 +228,7 @@ public class Dlx
         if (column.m_size == 0)
             return;  // No more options in this column, so this search is a bust.
 
-        Cover(column);
+        Cover(column, progressMetrics);
 
         for (Node row = column.m_below; row != column; row = row.m_below)
         {
@@ -231,10 +240,10 @@ public class Dlx
             // for each node in the row
             for (Node right = row.m_right; right != row; right = right.m_right)
             {
-                Cover(right.m_column);  // Cover the column
+                Cover(right.m_column, progressMetrics);  // Cover the column
             }
 
-            this.Search(progressCount, cancelToken);  // recurse
+            this.Search(progressMetrics, cancelToken);  // recurse
 
             // backtrack (reject the proposed solution)
             m_solution.Remove(row.m_row);
@@ -251,13 +260,13 @@ public class Dlx
     }
 
 
-    public static List<HashSet<int>> Solve(bool[/* col */, /* row */] matrix, CancellationToken cancelToken, ProgressCount? progressCount = null)
+    public static List<HashSet<int>> Solve(bool[/* col */, /* row */] matrix, CancellationToken cancelToken, ProgressMetrics? progressMetrics = null)
     {
-        progressCount ??= new();
-        progressCount.Count = 0;
+        progressMetrics ??= new();
+        progressMetrics.SolutionCount = 0;
 
         Dlx dlx = new(matrix);
-        dlx.Search(progressCount, cancelToken);
+        dlx.Search(progressMetrics, cancelToken);
 
         return dlx.m_solutions;
     }
