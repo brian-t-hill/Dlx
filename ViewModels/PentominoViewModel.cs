@@ -288,6 +288,10 @@ public class PentominoViewModel : SolvingBaseViewModel
     }
 
 
+    [NotifiesWithProperty(nameof(IsRemoteControlVisible))]
+    public string TriggerSymbol => this.IsRemoteControlVisible ? "\u02c4" : "\u02c5";
+
+
     private Command m_toggleRemoteControlVisibilityCommand = Command.NeverExecute;
 
     public Command ToggleRemoteControlVisibilityCommand

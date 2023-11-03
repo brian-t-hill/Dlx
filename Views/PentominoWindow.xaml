@@ -77,7 +77,7 @@
                     BorderBrush="DarkGray"
                     Padding="0,-2, 0, 0"
                     Margin="0,0,0,3"
-                    Content="˅"
+                    Content="{Binding TriggerSymbol}"
                     Command="{Binding ToggleRemoteControlVisibilityCommand}"
                     Opacity="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=RemoteControlTriggerOpacity}"
                     />

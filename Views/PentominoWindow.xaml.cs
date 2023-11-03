@@ -109,32 +109,25 @@ public partial class PentominoWindow : Window
 
     private void OnCanvasPreviewMouseMove(object sender, MouseEventArgs e)
     {
-        if (this.ViewModel.IsRemoteControlVisible)
-        {
+        // Set the opacity of the remote control trigger based on the distance of the mouse to the trigger
+
+        Point ptMouse = e.GetPosition(m_canvasGrid);
+
+        GeneralTransform transform = m_remoteControlTrigger.TransformToAncestor(m_canvasGrid);
+        Point ptTrigger = transform.Transform(new Point(0, 0));
+
+        (double x, double y) = (ptMouse.X - ptTrigger.X, ptMouse.Y - ptTrigger.Y);
+        double distance = Math.Sqrt((x * x) + (y * y));
+
+        double minimum = 40.0;
+        double maximum = Math.Max(minimum, Math.Min(m_canvasGrid.ActualHeight, m_canvasGrid.ActualWidth) * 2.0 / 3.0);
+        double range = Math.Max(double.Epsilon, maximum - minimum);
+
+        if (distance < minimum)
             this.RemoteControlTriggerOpacity = 1.0;
-        }
+        else if (distance > maximum)
+            this.RemoteControlTriggerOpacity = 0.0;
         else
-        {
-            // Set the opacity of the remote control trigger based on the distance of the mouse to the trigger
-
-            Point ptMouse = e.GetPosition(m_canvasGrid);
-
-            GeneralTransform transform = m_remoteControlTrigger.TransformToAncestor(m_canvasGrid);
-            Point ptTrigger = transform.Transform(new Point(0, 0));
-
-            (double x, double y) = (ptMouse.X - ptTrigger.X, ptMouse.Y - ptTrigger.Y);
-            double distance = Math.Sqrt((x * x) + (y * y));
-
-            double minimum = 40.0;
-            double maximum = Math.Max(minimum, Math.Min(m_canvasGrid.ActualHeight, m_canvasGrid.ActualWidth) * 2.0 / 3.0);
-            double range = Math.Max(double.Epsilon, maximum - minimum);
-
-            if (distance < minimum)
-                this.RemoteControlTriggerOpacity = 1.0;
-            else if (distance > maximum)
-                this.RemoteControlTriggerOpacity = 0.0;
-            else
-                this.RemoteControlTriggerOpacity = 1.0 - ((distance - minimum) / range);
-        }
+            this.RemoteControlTriggerOpacity = 1.0 - ((distance - minimum) / range);
     }
 }
