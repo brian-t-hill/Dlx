@@ -183,15 +183,19 @@ public static class SudokuMatrix
 
                 if (inputDigit != 0)
                 {
-                    // zero out the constraints columns
+                    // Since we know what digit goes here, let's zero out the constraints columns for all the
+                    // *other* digits that could go here.  That way, they can never be selected as part of
+                    // the solution.
 
                     for (int d = 1; d <= dimension; ++d)
                     {
                         if (d != inputDigit)
                         {
+                            int matrixRowIndex = GetRowIndex(dimension, y, x, d);
+
                             for (int column = 0; column < numberOfColumns; ++column)
                             {
-                                matrix[column, GetRowIndex(dimension, y, x, d)] = false;
+                                matrix[column, matrixRowIndex] = false;
                             }
                         }
                     }

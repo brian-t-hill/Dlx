@@ -28,7 +28,7 @@ public class SudokuControlViewModel : PropertyChangeNotifier
         }
 
 
-        [NotifiesWith(nameof(Value))]
+        [NotifiesWithProperty(nameof(Value))]
         public string ValueAsString => (this.Value == 0 ? " " : this.Value.ToString());
     }
 

@@ -106,6 +106,15 @@ namespace Pentomino {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Randomize.
+        /// </summary>
+        public static string idsRandomize {
+            get {
+                return ResourceManager.GetString("idsRandomize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Recursive passes:  {0:n0}.
         /// </summary>
         public static string idsRecursivePassesFormat {

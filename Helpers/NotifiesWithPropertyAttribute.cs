@@ -8,11 +8,11 @@ namespace Pentomino.Helpers;
 
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
-public class NotifiesWithAttribute : Attribute
+public class NotifiesWithPropertyAttribute : Attribute
 {
     public string Trigger { get; } = string.Empty;
 
-    public NotifiesWithAttribute(string trigger)
+    public NotifiesWithPropertyAttribute(string trigger)
     {
         this.Trigger = trigger;
     }

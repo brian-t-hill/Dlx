@@ -49,23 +49,23 @@ public class DlxMetricsControlViewModel : PropertyChangeNotifier
     }
 
 
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(SolvingCount))]
+    [NotifiesWithProperty(nameof(SolverElapsedSeconds))]
+    [NotifiesWithProperty(nameof(SolvingCount))]
     public string SolverElapsedDurationString => TimeSpan.FromSeconds(this.SolverElapsedSeconds).ToString("g");
 
 
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(SolvingCount))]
+    [NotifiesWithProperty(nameof(SolverElapsedSeconds))]
+    [NotifiesWithProperty(nameof(SolvingCount))]
     public string SolutionCount => this.ProgressMetrics.SolutionCount == 0 ? string.Empty : string.Format(LocalizableStrings.idsSolutionsFoundFormat, this.ProgressMetrics.SolutionCount);
 
 
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(SolvingCount))]
+    [NotifiesWithProperty(nameof(SolverElapsedSeconds))]
+    [NotifiesWithProperty(nameof(SolvingCount))]
     public string RowsRemovedCount => this.ProgressMetrics.RowsRemoved == 0 ? string.Empty : string.Format(LocalizableStrings.idsRowsRemovedFormat, this.ProgressMetrics.RowsRemoved);
 
 
-    [NotifiesWith(nameof(SolverElapsedSeconds))]
-    [NotifiesWith(nameof(SolvingCount))]
+    [NotifiesWithProperty(nameof(SolverElapsedSeconds))]
+    [NotifiesWithProperty(nameof(SolvingCount))]
     public string RecursivePassesCount => this.ProgressMetrics.RecursivePasses == 0 ? string.Empty : string.Format(LocalizableStrings.idsRecursivePassesFormat, this.ProgressMetrics.RecursivePasses);
 
 

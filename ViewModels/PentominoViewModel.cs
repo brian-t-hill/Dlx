@@ -133,7 +133,14 @@ public class PentominoViewModel : SolvingBaseViewModel
             Canvas.SetLeft(this.Shapes[jj], 0);
             Canvas.SetTop(this.Shapes[jj], 0);
         }
+
+        this.ToggleRemoteControlVisibilityCommand = new(() => this.IsRemoteControlVisible = !this.IsRemoteControlVisible);
+
+        this.PentominoesRemoteControlViewModel.OnPropertyChanged(nameof(CurrentSolution), (s, a) => this.CurrentSolution = this.PentominoesRemoteControlViewModel.CurrentSolution);
     }
+
+
+    public PentominoesRemoteControlViewModel PentominoesRemoteControlViewModel { get; } = new();
 
 
     public Shape[] Shapes { get; private set; }
@@ -189,22 +196,24 @@ public class PentominoViewModel : SolvingBaseViewModel
     }
 
 
-    public override void OnPickNextSolution(bool prev = false)
+    [CalledWhenPropertyChanges(nameof(Solutions))]
+    protected void OnBaseSolutionsChanged()
     {
-        if (this.IsSolving || m_pentominoMatrix is null || m_pentominoPlacementMetadata is null || this.Solutions.Count == 0)
+        this.PentominoesRemoteControlViewModel.NumberOfSolutions = this.Solutions.Count;
+    }
+
+
+    [CalledWhenPropertyChanges(nameof(CurrentSolution))]
+    protected void OnBaseCurrentSolutionChanged()
+    {
+        this.PentominoesRemoteControlViewModel.CurrentSolution = this.CurrentSolution;
+
+        if (m_pentominoMatrix is null || m_pentominoPlacementMetadata is null || this.CurrentSolution < 0 || this.Solutions.Count == 0 || this.CurrentSolution >= this.Solutions.Count)
             return;
 
-        if (this.CurrentSolution == -1)
-            this.CurrentSolution = RandomGenerator.Current.Next(this.Solutions.Count);
+        bool randomize = this.PentominoesRemoteControlViewModel.RandomOrder;
 
-        int proposedSolution = this.CurrentSolution + (prev ? -1 : 1);
-        int wrapAround = (prev ? this.Solutions.Count - 1 : 0);
-
-        this.CurrentSolution = (proposedSolution >= 0 && proposedSolution < this.Solutions.Count ? proposedSolution : wrapAround);
-        HashSet<int> solution = this.Solutions[this.RandomizedSolutionIndexes[this.CurrentSolution]];
-
-        char[,] board = Algorithms.PentominoMatrix.ComposeBoard(10, 6, solution, this.m_pentominoMatrix);
-        board.GetType();
+        HashSet<int> solution = this.Solutions[randomize ? this.RandomizedSolutionIndexes[this.CurrentSolution] : this.CurrentSolution];
 
         foreach (int rowIndex in solution)
         {
@@ -218,6 +227,23 @@ public class PentominoViewModel : SolvingBaseViewModel
             Canvas.SetLeft(shape, m_pentominoPlacementMetadata[rowIndex].LeftAdjust * 100);
             Canvas.SetTop(shape, m_pentominoPlacementMetadata[rowIndex].TopAdjust * 100);
         }
+    }
+
+
+    public override void OnPickNextSolution(bool prev = false)
+    {
+        if (this.IsSolving || m_pentominoMatrix is null || m_pentominoPlacementMetadata is null || this.Solutions.Count == 0)
+            return;
+
+        int currentSolution = this.CurrentSolution;
+
+        if (currentSolution == -1)
+            currentSolution = RandomGenerator.Current.Next(this.Solutions.Count);
+
+        int proposedSolution = currentSolution + (prev ? -1 : 1);
+        int wrapAround = (prev ? this.Solutions.Count - 1 : 0);
+
+        this.CurrentSolution = (proposedSolution >= 0 && proposedSolution < this.Solutions.Count ? proposedSolution : wrapAround);
     }
 
 
@@ -250,6 +276,24 @@ public class PentominoViewModel : SolvingBaseViewModel
         this.ResetCancellationTokenSource();
 
         return false;
+    }
+
+
+    private bool m_isRemoteControlVisible = false;
+
+    public bool IsRemoteControlVisible
+    {
+        get => m_isRemoteControlVisible;
+        set => this.SetProperty(ref m_isRemoteControlVisible, value);
+    }
+
+
+    private Command m_toggleRemoteControlVisibilityCommand = Command.NeverExecute;
+
+    public Command ToggleRemoteControlVisibilityCommand
+    {
+        get => m_toggleRemoteControlVisibilityCommand;
+        private set => this.SetProperty(ref m_toggleRemoteControlVisibilityCommand, value);
     }
 
 }

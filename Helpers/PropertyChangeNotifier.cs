@@ -82,8 +82,8 @@ public class PropertyChangeNotifier : INotifyPropertyChanged
         var propertiesAndTriggers =
             GetType()
             .GetRuntimeProperties()
-            .SelectMany<PropertyInfo, (string Property, string Trigger)>(pi => pi.GetCustomAttributes<NotifiesWithAttribute>()
-                .Select<NotifiesWithAttribute, (string Property, string Trigger)>(nwa => (pi.Name, nwa.Trigger)));
+            .SelectMany<PropertyInfo, (string Property, string Trigger)>(pi => pi.GetCustomAttributes<NotifiesWithPropertyAttribute>()
+                .Select<NotifiesWithPropertyAttribute, (string Property, string Trigger)>(nwa => (pi.Name, nwa.Trigger)));
 
         foreach (var (property, trigger) in propertiesAndTriggers)
         {

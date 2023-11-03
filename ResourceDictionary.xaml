@@ -32,7 +32,10 @@
     <PentominoConverters:IntToTrueConverter x:Key="appres_TrueIf_8" ValueToTrue="{StaticResource appres_8_Value}" />
     <PentominoConverters:IntToTrueConverter x:Key="appres_TrueIf_9" ValueToTrue="{StaticResource appres_9_Value}" />
 
-    
+    <PentominoConverters:IntMultiplyWithParameterConverter x:Key="appres_IntMultiplyWithParam" />
+    <PentominoConverters:DoubleMultiplyWithParameterConverter x:Key="appres_DoubleMultiplyWithParam" />
+
+
     <Style x:Key="toolbarSeparatorStyle" TargetType="{x:Type Separator}">
         <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
         <Setter Property="Focusable" Value="false" />

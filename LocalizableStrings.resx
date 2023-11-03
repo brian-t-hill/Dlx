@@ -132,6 +132,9 @@
   <data name="idsPentominoesWindowTitle" xml:space="preserve">
     <value>Pentominoes</value>
   </data>
+  <data name="idsRandomize" xml:space="preserve">
+    <value>Randomize</value>
+  </data>
   <data name="idsRecursivePassesFormat" xml:space="preserve">
     <value>Recursive passes:  {0:n0}</value>
   </data>

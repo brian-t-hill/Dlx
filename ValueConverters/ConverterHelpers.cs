@@ -9,42 +9,34 @@ namespace Pentomino.ValueConverters;
 
 static class ConverterHelpers
 {
-    public static bool AsBool(this object? value)
+    public static T AsT<T>(this object? value) where T : struct
     {
         if (value is null)
-            return false;
+            return default;
 
-        bool boolValue = false;
+        T t = default;
 
         try
         {
-            boolValue = (bool) value;
+            t = (T) Convert.ChangeType(value, typeof(T));
         }
         catch (Exception)
         {
-            boolValue = (0 != (int) value);
         }
 
-        return boolValue;
+        return t;
+    }
+
+
+    public static bool AsBool(this object? value)
+    {
+        return value.AsT<bool>();
     }
 
 
     public static int AsInt(this object? value)
     {
-        if (value is null)
-            return 0;
-
-        int intValue = 0;
-
-        try
-        {
-            intValue = (int) value;
-        }
-        catch (Exception)
-        {
-        }
-
-        return intValue;
+        return value.AsT<int>();
     }
 
 }
