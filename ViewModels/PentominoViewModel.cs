@@ -136,7 +136,7 @@ public class PentominoViewModel : SolvingBaseViewModel
 
         this.ToggleRemoteControlVisibilityCommand = new(() => this.IsRemoteControlVisible = !this.IsRemoteControlVisible);
 
-        this.PentominoesRemoteControlViewModel.OnPropertyChanged(nameof(CurrentSolution), (s, a) => this.CurrentSolution = this.PentominoesRemoteControlViewModel.CurrentSolution);
+        this.PentominoesRemoteControlViewModel.OnPropertyChanged(nameof(PentominoesRemoteControlViewModel.OneBasedCurrentSolution), (s, a) => this.CurrentSolution = this.PentominoesRemoteControlViewModel.OneBasedCurrentSolution - 1);
     }
 
 
@@ -206,7 +206,7 @@ public class PentominoViewModel : SolvingBaseViewModel
     [CalledWhenPropertyChanges(nameof(CurrentSolution))]
     protected void OnBaseCurrentSolutionChanged()
     {
-        this.PentominoesRemoteControlViewModel.CurrentSolution = this.CurrentSolution;
+        this.PentominoesRemoteControlViewModel.OneBasedCurrentSolution = this.CurrentSolution + 1;
 
         if (m_pentominoMatrix is null || m_pentominoPlacementMetadata is null || this.CurrentSolution < 0 || this.Solutions.Count == 0 || this.CurrentSolution >= this.Solutions.Count)
             return;
@@ -289,7 +289,7 @@ public class PentominoViewModel : SolvingBaseViewModel
 
 
     [NotifiesWithProperty(nameof(IsRemoteControlVisible))]
-    public string TriggerSymbol => this.IsRemoteControlVisible ? "\u02c4" : "\u02c5";
+    public string TriggerSymbol => this.IsRemoteControlVisible ? LocalizableStrings.idsUpArrow : LocalizableStrings.idsDownArrow;
 
 
     private Command m_toggleRemoteControlVisibilityCommand = Command.NeverExecute;

@@ -39,6 +39,19 @@
                 <TextBlock Text="{Binding NumberOfSolutions, StringFormat='{}{0:n0}'}" />
             </StackPanel>
 
+            <Button
+                DockPanel.Dock="Left"
+                Content="{x:Static local:LocalizableStrings.idsLeftArrow}"
+                Margin="2,0,1,0"
+                Command="{Binding PreviousCommand}"
+                />
+            <Button
+                DockPanel.Dock="Right"
+                Content="{x:Static local:LocalizableStrings.idsRightArrow}"
+                Margin="1,0,2,0"
+                Command="{Binding NextCommand}"
+                />
+
             <Slider
                 x:Name="m_slider"
                 Minimum="1"
@@ -48,7 +61,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 IsMoveToPointEnabled="true"
-                Value="{Binding CurrentSolution}"
+                Value="{Binding OneBasedCurrentSolution}"
                 />
         </DockPanel>
 

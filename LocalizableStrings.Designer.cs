@@ -79,6 +79,15 @@ namespace Pentomino {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ˅.
+        /// </summary>
+        public static string idsDownArrow {
+            get {
+                return ResourceManager.GetString("idsDownArrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pentominoes....
         /// </summary>
         public static string idsLaunchPentominoesButton {
@@ -93,6 +102,15 @@ namespace Pentomino {
         public static string idsLaunchSudokuButton {
             get {
                 return ResourceManager.GetString("idsLaunchSudokuButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ˂.
+        /// </summary>
+        public static string idsLeftArrow {
+            get {
+                return ResourceManager.GetString("idsLeftArrow", resourceCulture);
             }
         }
         
@@ -120,6 +138,15 @@ namespace Pentomino {
         public static string idsRecursivePassesFormat {
             get {
                 return ResourceManager.GetString("idsRecursivePassesFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ˃.
+        /// </summary>
+        public static string idsRightArrow {
+            get {
+                return ResourceManager.GetString("idsRightArrow", resourceCulture);
             }
         }
         
@@ -165,6 +192,15 @@ namespace Pentomino {
         public static string idsSudokuWindowTitle {
             get {
                 return ResourceManager.GetString("idsSudokuWindowTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ˄.
+        /// </summary>
+        public static string idsUpArrow {
+            get {
+                return ResourceManager.GetString("idsUpArrow", resourceCulture);
             }
         }
     }

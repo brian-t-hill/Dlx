@@ -8,11 +8,11 @@ namespace Pentomino.Helpers;
 
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
-public class CanExecuteChangesWithAttribute : Attribute
+public class CanExecuteChangesWithPropertyAttribute : Attribute
 {
     public string Trigger { get; } = string.Empty;
 
-    public CanExecuteChangesWithAttribute(string trigger)
+    public CanExecuteChangesWithPropertyAttribute(string trigger)
     {
         this.Trigger = trigger;
     }

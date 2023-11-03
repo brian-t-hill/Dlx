@@ -123,11 +123,17 @@
   <data name="idsCancelButton" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="idsDownArrow" xml:space="preserve">
+    <value>˅</value>
+  </data>
   <data name="idsLaunchPentominoesButton" xml:space="preserve">
     <value>Pentominoes...</value>
   </data>
   <data name="idsLaunchSudokuButton" xml:space="preserve">
     <value>Sudoku...</value>
+  </data>
+  <data name="idsLeftArrow" xml:space="preserve">
+    <value>˂</value>
   </data>
   <data name="idsPentominoesWindowTitle" xml:space="preserve">
     <value>Pentominoes</value>
@@ -137,6 +143,9 @@
   </data>
   <data name="idsRecursivePassesFormat" xml:space="preserve">
     <value>Recursive passes:  {0:n0}</value>
+  </data>
+  <data name="idsRightArrow" xml:space="preserve">
+    <value>˃</value>
   </data>
   <data name="idsRowsRemovedFormat" xml:space="preserve">
     <value>Rows removed:  {0:n0}</value>
@@ -152,5 +161,8 @@
   </data>
   <data name="idsSudokuWindowTitle" xml:space="preserve">
     <value>Sudoku</value>
+  </data>
+  <data name="idsUpArrow" xml:space="preserve">
+    <value>˄</value>
   </data>
 </root>

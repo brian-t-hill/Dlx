@@ -135,8 +135,8 @@ public class PropertyChangeNotifier : INotifyPropertyChanged
         var commandsAndTriggers =
             GetType()
             .GetRuntimeProperties()
-            .SelectMany<PropertyInfo, (string Property, string Trigger)>(pi => pi.GetCustomAttributes<CanExecuteChangesWithAttribute>()
-                .Select<CanExecuteChangesWithAttribute, (string Property, string Trigger)>(cecwa => (pi.Name, cecwa.Trigger)));
+            .SelectMany<PropertyInfo, (string Property, string Trigger)>(pi => pi.GetCustomAttributes<CanExecuteChangesWithPropertyAttribute>()
+                .Select<CanExecuteChangesWithPropertyAttribute, (string Property, string Trigger)>(cecwa => (pi.Name, cecwa.Trigger)));
 
         foreach (var (property, trigger) in commandsAndTriggers)
         {
