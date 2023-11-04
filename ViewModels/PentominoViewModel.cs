@@ -264,7 +264,7 @@ public class PentominoViewModel : SolvingBaseViewModel
 
         await Task.Run(() =>
         {
-            solutions = Algorithms.Dlx.Solve(m_pentominoMatrix, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
+            solutions = Algorithms.Dlx.Solve(m_pentominoMatrix, int.MaxValue, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
         });
 
         this.IsSolving = false;

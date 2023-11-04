@@ -50,6 +50,13 @@ public class SudokuControlViewModel : PropertyChangeNotifier
                 this.Board[y][x] = new() { Value = 0 };
             }
         }
+
+        this.RandomizeCommand = new(() => this.IsEditable, () =>
+        {
+            int[/* row */][/* col */] inputs = SudokuMatrix.GenerateRandomOpeningInputs(9);
+
+            this.ApplyOutputToBoard(inputs);
+        });
     }
 
 
@@ -104,6 +111,9 @@ public class SudokuControlViewModel : PropertyChangeNotifier
             }
         }
     }
+
+
+    public Command RandomizeCommand { get; }
 
 }
 

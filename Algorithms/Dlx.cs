@@ -212,7 +212,7 @@ public class Dlx
 
     // Search, the recursive function
     //
-    private void Search(ProgressMetrics progressMetrics, CancellationToken cancelToken)
+    private void Search(ProgressMetrics progressMetrics, int solutionLimit, CancellationToken cancelToken)
     {
         ++progressMetrics.RecursivePasses;
 
@@ -254,7 +254,7 @@ public class Dlx
                 CoverColumn(nodeInRow.m_column, progressMetrics);  // Cover the column
             }
 
-            this.Search(progressMetrics, cancelToken);  // recurse
+            this.Search(progressMetrics, solutionLimit, cancelToken);  // recurse
 
             // backtrack (reject the proposed solution)
             m_workingSolution.Remove(row.m_row);
@@ -265,6 +265,9 @@ public class Dlx
             {
                 UncoverColumn(nodeInRow.m_column);  // Uncover the column
             }
+
+            if (solutionLimit == m_confirmedSolutions.Count)
+                break;
         }
 
         // We've exhausted all the rows and still haven't covered all the columns, so this
@@ -274,13 +277,16 @@ public class Dlx
     }
 
 
-    public static List<HashSet<int>> Solve(bool[/* col */, /* row */] matrix, CancellationToken cancelToken, ProgressMetrics? progressMetrics = null)
+    public static List<HashSet<int>> Solve(bool[/* col */, /* row */] matrix, int solutionLimit, CancellationToken cancelToken, ProgressMetrics? progressMetrics = null)
     {
         progressMetrics ??= new();
         progressMetrics.SolutionCount = 0;
 
+        if (solutionLimit <= 0)
+            return new();
+
         Dlx dlx = new(matrix);
-        dlx.Search(progressMetrics, cancelToken);
+        dlx.Search(progressMetrics, solutionLimit, cancelToken);
 
         return dlx.m_confirmedSolutions;
     }

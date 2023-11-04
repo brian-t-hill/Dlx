@@ -46,7 +46,7 @@ public class SudokuViewModel : SolvingBaseViewModel
         this.CurrentSolution = (proposedSolution >= 0 && proposedSolution < this.Solutions.Count ? proposedSolution : wrapAround);
         HashSet<int> solution = this.Solutions[this.RandomizedSolutionIndexes[this.CurrentSolution]];
 
-        int[/* row */][/* col */] output = Algorithms.SudokuMatrix.MakeOutputsFromSolution(solution, m_sudokuMatrix);
+        int[/* row */][/* col */] output = Algorithms.SudokuMatrix.MakeOutputsFromSolution(solution, m_sudokuMatrix, deshuffledRowIndexes: null);
         this.OutputSudokuControlViewModel.ApplyOutputToBoard(output);
     }
 
@@ -59,7 +59,7 @@ public class SudokuViewModel : SolvingBaseViewModel
         this.ResetCancellationTokenSource();
 
         int[/* row */][/* col */] boardInputs = this.InputSudokuControlViewModel.CreateMatrix9x9InputsFromBoard();
-        m_sudokuMatrix = Algorithms.SudokuMatrix.MakeMatrix(boardInputs);
+        m_sudokuMatrix = Algorithms.SudokuMatrix.MakeMatrix(boardInputs, shuffledRowIndexes: null);
 
         CancellationToken cancelToken = this.SolverCancellationToken;
 
@@ -69,7 +69,7 @@ public class SudokuViewModel : SolvingBaseViewModel
 
         await Task.Run(() =>
         {
-            solutions = Algorithms.Dlx.Solve(m_sudokuMatrix, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
+            solutions = Algorithms.Dlx.Solve(m_sudokuMatrix, int.MaxValue, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
         });
 
         this.IsSolving = false;

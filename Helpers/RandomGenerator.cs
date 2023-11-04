@@ -28,6 +28,21 @@ public static class RandomGenerator
     }
 
 
+    public static T[] Shuffle<T>(this T[] array)
+    {
+        Random rnd = RandomGenerator.Current;
+
+        for (int jj = array.Length - 1; jj >= 1; --jj)
+        {
+            int kk = rnd.Next(jj + 1);
+
+            (array[jj], array[kk]) = (array[kk], array[jj]);
+        }
+
+        return array;
+    }
+
+
 }
 
 

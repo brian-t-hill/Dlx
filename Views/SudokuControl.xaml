@@ -12,6 +12,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="10" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
         <Grid Grid.Row="0" HorizontalAlignment="Center">  <!-- The 9x9 sudoku grid -->
@@ -445,5 +447,15 @@
                 />
 
         </Grid>
+
+        <Button
+            Grid.Row="4"
+            Visibility="{Binding IsEditable, Converter={StaticResource appres_TrueIsVisible}}"
+            Content="{x:Static local:LocalizableStrings.idsRandomize}"
+            Padding="15,5,15,5"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Command="{Binding RandomizeCommand}"
+            />
     </Grid>
 </UserControl>
