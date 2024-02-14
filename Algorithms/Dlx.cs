@@ -210,9 +210,9 @@ public class Dlx
     }
 
 
-    // Search, the recursive function
+    // Solve, the recursive function
     //
-    private void Search(ProgressMetrics progressMetrics, int solutionLimit, CancellationToken cancelToken)
+    private void Solve (ProgressMetrics progressMetrics, int solutionLimit, CancellationToken cancelToken)
     {
         ++progressMetrics.RecursivePasses;
 
@@ -221,7 +221,7 @@ public class Dlx
 
         if (m_root.m_right == m_root)
         {
-            // Since there are no more columns, we must have covered everything successfully.
+            // Since there are no more columns, we must have covered everything successfully. 
 
             // REVIEW$:  When the number of solutions is large, the performance gets **REALLY**
             // bad.  Probably from having to resize the large array.
@@ -237,7 +237,7 @@ public class Dlx
 
         ColumnNode column = this.FindSmallestColumn();
         if (column.m_size == 0)
-            return;  // No more options in this column, so this search is a bust.
+            return;  // No more options in this column, so this solution is a bust.
 
         CoverColumn(column, progressMetrics);
 
@@ -254,7 +254,7 @@ public class Dlx
                 CoverColumn(nodeInRow.m_column, progressMetrics);  // Cover the column
             }
 
-            this.Search(progressMetrics, solutionLimit, cancelToken);  // recurse
+            this.Solve(progressMetrics, solutionLimit, cancelToken);  // recurse
 
             // backtrack (reject the proposed solution)
             m_workingSolution.Remove(row.m_row);
@@ -286,7 +286,7 @@ public class Dlx
             return new();
 
         Dlx dlx = new(matrix);
-        dlx.Search(progressMetrics, solutionLimit, cancelToken);
+        dlx.Solve(progressMetrics, solutionLimit, cancelToken);
 
         return dlx.m_confirmedSolutions;
     }

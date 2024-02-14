@@ -46,12 +46,12 @@ public partial class SudokuWindow : Window
         e.Cancel = this.ViewModel.OnClosing();
     }
 
-    private void OnWindowMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void OnSolutionMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         this.ViewModel.OnPickNextSolution(prev: false);
     }
 
-    private void OnWindowMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    private void OnSolutionMouseRightButtonUp(object sender, MouseButtonEventArgs e)
     {
         this.ViewModel.OnPickNextSolution(prev: true);
     }

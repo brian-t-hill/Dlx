@@ -34,8 +34,24 @@ public class SudokuViewModel : SolvingBaseViewModel
 
     public override void OnPickNextSolution(bool prev = false)
     {
-        if (this.IsSolving || m_sudokuMatrix is null || this.Solutions.Count == 0)
+        if (this.IsSolving || m_sudokuMatrix is null)
             return;
+
+        if (this.Solutions.Count == 0)
+        {
+            // Clear the previous output.
+
+            int[/* row */][/* col */] blank = new int[9][];
+
+            for (int jj = 0; jj < blank.Length; ++jj)
+            {
+                blank[jj] = new int[9];
+            }
+
+            this.OutputSudokuControlViewModel.ApplyOutputToBoard(blank);
+
+            return;
+        }
 
         if (this.CurrentSolution == -1)
             this.CurrentSolution = RandomGenerator.Current.Next(this.Solutions.Count);

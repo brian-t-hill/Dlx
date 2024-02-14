@@ -22,15 +22,23 @@ public partial class LauncherWindow : Window
         InitializeComponent();
     }
 
+
+    // I wish it were easier to keep all the built-in window size and position logic, but just change which
+    // monitor the window gets created on.  I want these windows to show up on the same monitor as the launcher
+    // window.  But I don't feel like recreating all the basic logic and dealing with DPI and all the estorica,
+    // so I'm just going to place the Pentomino window to the right of the launcher window and the suduko
+    // window will go below it.  Obviously, that will only work well if the launcher window is not on the
+    // bottom or the right of the screen.
+
     private void OnNewPentominoesWindow(object sender, RoutedEventArgs e)
     {
-        Window window = new PentominoWindow();
+        Window window = new PentominoWindow { Left = this.Left + this.Width + 15, Top = this.Top };
         window.Show();
     }
 
     private void OnNewSudokuWindow(object sender, RoutedEventArgs e)
     {
-        Window window = new SudokuWindow();
+        Window window = new SudokuWindow { Left = this.Left, Top = this.Top + this.Height + 15 };
         window.Show();
     }
 }

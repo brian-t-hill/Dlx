@@ -8,8 +8,6 @@
         mc:Ignorable="d"
         Title="{x:Static local:LocalizableStrings.idsSudokuWindowTitle}"
         Closing="OnWindowClosing"
-        MouseLeftButtonUp="OnWindowMouseLeftButtonUp"
-        MouseRightButtonUp="OnWindowMouseRightButtonUp"
         Width="806"
         Height="520"
         >
@@ -42,6 +40,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     DataContext="{Binding OutputSudokuControlViewModel}"
+                    MouseLeftButtonUp="OnSolutionMouseLeftButtonUp"
+                    MouseRightButtonUp="OnSolutionMouseRightButtonUp"
                     />
             </Grid>
 

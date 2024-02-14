@@ -79,7 +79,8 @@ public class SudokuControlViewModel : PropertyChangeNotifier
 
     public void ApplyInputToBoard(int column, int row)
     {
-        this.Board[row][column].Value = this.InputValue;
+        if (column >= 0 && row >= 0)
+            this.Board[row][column].Value = this.InputValue;
     }
 
 
