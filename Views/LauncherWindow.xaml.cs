@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,5 +41,11 @@ public partial class LauncherWindow : Window
     {
         Window window = new SudokuWindow { Left = this.Left, Top = this.Top + this.Height + 15 };
         window.Show();
+    }
+
+    private void OnNavigateToGitHub(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        using Process? process = Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+        e.Handled = true;
     }
 }
