@@ -10,7 +10,7 @@
     <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" >
         <StackPanel Orientation="Horizontal">
             <TextBlock
-                Text="{x:Static local:LocalizableStrings.idsSolvingWithEllipsis}"
+                Text="{Binding DurationLabel}"
                 FontSize="18"
                 />
             <TextBlock

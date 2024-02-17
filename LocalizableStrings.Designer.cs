@@ -88,6 +88,15 @@ namespace Pentomino {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duration: .
+        /// </summary>
+        public static string idsDurationLabel {
+            get {
+                return ResourceManager.GetString("idsDurationLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pentominoes....
         /// </summary>
         public static string idsLaunchPentominoesButton {
@@ -178,15 +187,6 @@ namespace Pentomino {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Solving ....
-        /// </summary>
-        public static string idsSolvingWithEllipsis {
-            get {
-                return ResourceManager.GetString("idsSolvingWithEllipsis", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Sudoku.
         /// </summary>
         public static string idsSudokuWindowTitle {
@@ -201,6 +201,15 @@ namespace Pentomino {
         public static string idsUpArrow {
             get {
                 return ResourceManager.GetString("idsUpArrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Working ....
+        /// </summary>
+        public static string idsWorkingWithEllipsis {
+            get {
+                return ResourceManager.GetString("idsWorkingWithEllipsis", resourceCulture);
             }
         }
     }

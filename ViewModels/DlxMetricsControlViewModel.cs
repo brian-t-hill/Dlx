@@ -40,6 +40,14 @@ public class DlxMetricsControlViewModel : PropertyChangeNotifier
     }
 
 
+    [NotifiesWithProperty(nameof(SolvingCount))]
+    public bool Working => this.SolvingCount > 0;
+
+
+    [NotifiesWithProperty(nameof(Working))]
+    public string DurationLabel => this.Working ? LocalizableStrings.idsWorkingWithEllipsis : LocalizableStrings.idsDurationLabel;
+
+
     private int m_solverElapsedSeconds = 0;
 
     public int SolverElapsedSeconds

@@ -46,47 +46,34 @@
             </Grid>
 
             <Button
-                Grid.Column="0" Grid.Row="2"
-                Visibility="{Binding IsSolving, Converter={StaticResource appres_FalseIsVisible}}"
-                Margin="0,10,0,0"
+                Grid.Column="0"
+                Grid.Row="2"
                 Padding="15,5"
+                Visibility="{Binding IsSolving, Converter={StaticResource appres_FalseIsVisible}}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Content="{x:Static local:LocalizableStrings.idsSolveButton}"
                 Command="{Binding SolveCommand}"
                 />
 
-            <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding IsSolving, Converter={StaticResource appres_TrueIsVisible}}">
+            <Button
+                Grid.Column="0"
+                Grid.Row="2"
+                Padding="15,5"
+                Visibility="{Binding IsSolving, Converter={StaticResource appres_TrueIsVisible}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Content="{x:Static local:LocalizableStrings.idsCancelButton}"
+                Command="{Binding CancelCommand}"
+                />
+
+
+            <StackPanel Grid.Column="2" Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" >
                 <localViews:DlxMetricsControl
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     DataContext="{Binding DlxMetricsControlViewModel}"
                     />
-
-                <Button
-                    Margin="0,10,0,0"
-                    Padding="15,5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Top"
-                    Content="{x:Static local:LocalizableStrings.idsCancelButton}"
-                    Command="{Binding CancelCommand}"
-                    />
-            </StackPanel>
-
-
-            <StackPanel Grid.Column="2" Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding IsSolving, Converter={StaticResource appres_FalseIsVisible}}">
-                <TextBlock
-                Margin="0,0,0,0"
-                Text="{Binding SolutionCount}"
-                FontSize="18"
-                />
-
-                <TextBlock
-                    Margin="0,10,0,0"
-                    Text="{Binding SolverElapsedDurationString}"
-                    FontSize="18"
-                    />
-
             </StackPanel>
         </Grid>
     </Grid>

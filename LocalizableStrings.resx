@@ -126,6 +126,9 @@
   <data name="idsDownArrow" xml:space="preserve">
     <value>˅</value>
   </data>
+  <data name="idsDurationLabel" xml:space="preserve">
+    <value>Duration: </value>
+  </data>
   <data name="idsLaunchPentominoesButton" xml:space="preserve">
     <value>Pentominoes...</value>
   </data>
@@ -156,13 +159,13 @@
   <data name="idsSolveButton" xml:space="preserve">
     <value>Solve</value>
   </data>
-  <data name="idsSolvingWithEllipsis" xml:space="preserve">
-    <value>Solving ...</value>
-  </data>
   <data name="idsSudokuWindowTitle" xml:space="preserve">
     <value>Sudoku</value>
   </data>
   <data name="idsUpArrow" xml:space="preserve">
     <value>˄</value>
+  </data>
+  <data name="idsWorkingWithEllipsis" xml:space="preserve">
+    <value>Working ...</value>
   </data>
 </root>
