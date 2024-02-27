@@ -171,6 +171,8 @@ public class PentominoViewModel : SolvingBaseViewModel
     }
 
 
+    public bool ParallelSolver { get; set; } = true;
+
     private static Transform GetRotateAndScaleTransformsFromMetadata(PlacementMetadata metadata)
     {
         RotateTransform? rotation = (metadata.Angle != 0 ? new RotateTransform { Angle = metadata.Angle } : null);
@@ -260,15 +262,14 @@ public class PentominoViewModel : SolvingBaseViewModel
 
         this.DlxMetricsControlViewModel.ResetMetrics();
         this.IsSolving = true;
-        List<HashSet<int>>? solutions = null;
 
         await Task.Run(() =>
         {
-            solutions = Algorithms.Dlx.Solve(m_pentominoMatrix, int.MaxValue, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
+            Algorithms.Dlx.Solve(m_pentominoMatrix, this.ParallelSolver, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
         });
 
         this.IsSolving = false;
-        this.Solutions = solutions ?? new();
+        this.Solutions = this.DlxMetricsControlViewModel.ProgressMetrics.GetConfirmedSolutions();
     }
 
     public bool OnClosing()

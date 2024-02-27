@@ -33,7 +33,7 @@ public partial class LauncherWindow : Window
 
     private void OnNewPentominoesWindow(object sender, RoutedEventArgs e)
     {
-        Window window = new PentominoWindow { Left = this.Left + this.Width + 15, Top = this.Top };
+        Window window = new PentominoWindow(parallelSolver: true) { Left = this.Left + this.Width + 15, Top = this.Top };
         window.Show();
     }
 

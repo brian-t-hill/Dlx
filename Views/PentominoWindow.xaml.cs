@@ -26,11 +26,11 @@ namespace Pentomino.Views;
 
 public partial class PentominoWindow : Window
 {
-    public PentominoWindow()
+    public PentominoWindow(bool parallelSolver)
     {
         this.InitializeComponent();
 
-        this.ViewModel = new();
+        this.ViewModel = new() { ParallelSolver = parallelSolver };
         this.DataContext = this.ViewModel;
 
         foreach (Shape shape in this.ViewModel.Shapes)

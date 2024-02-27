@@ -248,7 +248,10 @@ public static class SudokuMatrix
 
         bool[/* col */, /* row */] matrix = MakeMatrix(emptyInputs, shuffledRowIndexes);
 
-        List<HashSet<int>> solutions = Dlx.Solve(matrix, 1, CancellationToken.None, progressMetrics: null);
+        Dlx.ProgressMetrics progressMetrics = new() { SolutionLimit = 1 }; 
+        Dlx.Solve(matrix, parallelSolver: false, CancellationToken.None, progressMetrics);
+
+        List<HashSet<int>> solutions = progressMetrics.GetConfirmedSolutions();
         Debug.Assert(solutions.Count == 1);
 
         return MakeOutputsFromSolution(solutions.First(), matrix, deshuffledRowIndexes);
@@ -275,7 +278,7 @@ public static class SudokuMatrix
             // But if there are multiple solutions, then we'll put the digit back and loop back to try
             // removing another digit.  We'll continue until we've tried removing all the digits.
 
-            int space = randomizedSpaces[randomizedSpaces.Count - 1];
+            int space = randomizedSpaces[^1];
             randomizedSpaces.RemoveAt(randomizedSpaces.Count - 1);
 
             int row = space / numberOfColumns;
@@ -285,9 +288,10 @@ public static class SudokuMatrix
             inputs[row][column] = 0;
 
             bool[/* col */, /* row */] matrix = Algorithms.SudokuMatrix.MakeMatrix(inputs, shuffledRowIndexes: null);
-            List<HashSet<int>> solutions = Algorithms.Dlx.Solve(matrix, 2, CancellationToken.None, progressMetrics: null);
+            Dlx.ProgressMetrics progressMetrics = new() { SolutionLimit = 2, CountSolutionsWithoutCollecting = true };
+            Algorithms.Dlx.Solve(matrix, parallelSolver: false, CancellationToken.None, progressMetrics);
 
-            if (solutions.Count > 1)
+            if (progressMetrics.SolutionCount > 1)
                 inputs[row][column] = removedDigit;
         }
     }

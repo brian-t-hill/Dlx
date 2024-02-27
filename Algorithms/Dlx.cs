@@ -60,21 +60,101 @@ public class Dlx
 
     public class ProgressMetrics
     {
-        // Data to be read by anybody, written only by Dlx solver.
+        private long m_solutionLimit = long.MaxValue;
+
+        public long SolutionLimit
+        {
+            get => m_solutionLimit;
+            init => m_solutionLimit = value;
+        }
+
+        public bool SolutionLimitReached() => this.SolutionLimit <= this.SolutionCount;
+
+
+        private bool m_countSolutionsWithoutCollecting = false;
+
+        public bool CountSolutionsWithoutCollecting
+        {
+            get => m_countSolutionsWithoutCollecting;
+            init => m_countSolutionsWithoutCollecting = value;
+        }
+
+
+        public void ResetAll()
+        {
+            // Not thread-safe.
+
+            this.ResetSolutionCount();
+            this.ResetRowsRemoved();
+            this.ResetRecursivePasses();
+            this.m_confirmedSolutions.Clear();
+        }
+
 
         private long m_solutionCount = 0;
     
-        public long SolutionCount { get => m_solutionCount; set => m_solutionCount = value; }
+        public long SolutionCount => Interlocked.Read(ref m_solutionCount);
+
+        private long IncrementSolutionCount() => Interlocked.Increment(ref m_solutionCount);
+
+        public void ResetSolutionCount() => Interlocked.Exchange(ref m_solutionCount, 0);
 
 
         private long m_rowsRemoved = 0;
 
-        public long RowsRemoved { get => m_rowsRemoved; set => m_rowsRemoved = value; }
+        public long RowsRemoved => Interlocked.Read(ref m_rowsRemoved);
+
+        public long IncrementRowsRemoved() => Interlocked.Increment(ref m_rowsRemoved);
+
+        public void ResetRowsRemoved() => Interlocked.Exchange(ref m_rowsRemoved, 0);
 
 
         private long m_recursivePasses = 0;
 
-        public long RecursivePasses { get => m_recursivePasses; set => m_recursivePasses = value; }
+        public long RecursivePasses => Interlocked.Read(ref m_recursivePasses);
+
+        public long IncrementRecursivePasses() => Interlocked.Increment(ref m_recursivePasses);
+
+        public void ResetRecursivePasses() => Interlocked.Exchange(ref m_recursivePasses, 0);
+
+
+        private readonly object m_solutionLock = new();
+
+        private readonly List<HashSet<int>> m_confirmedSolutions = new();  // All solutions found so far
+
+
+        public void CollectSolution(HashSet<int> solution)
+        {
+            lock (m_solutionLock)
+            {
+                if (this.SolutionCount >= this.SolutionLimit)
+                    return;
+
+                this.IncrementSolutionCount();
+
+                if (!this.CountSolutionsWithoutCollecting)
+                {
+                    // List<>.Count is an int, but m_solutionCount is a long.  That's okay.  That just means that
+                    // we can *count* a lot more solutions than we can *collect*.
+
+                    // REVIEW$:  When the number of solutions is large, the performance gets **REALLY**
+                    // bad.  Undoubtedly from having to resize the large array.
+
+                    m_confirmedSolutions.Add(solution);
+                }
+            }
+        }
+
+        public void CountSolutionWithoutCollecting() => this.IncrementSolutionCount();
+
+
+        public List<HashSet<int>> GetConfirmedSolutions()
+        {
+            // Not thread-safe.
+
+            return new(m_confirmedSolutions);
+        }
+
     }
 
 
@@ -82,7 +162,12 @@ public class Dlx
 
     private readonly HashSet<int> m_workingSolution = new();  // current solution in progress
 
-    private readonly List<HashSet<int>> m_confirmedSolutions = new();  // All solutions found
+
+    private Dlx(ColumnNode root, HashSet<int> workingSolution)
+    {
+        m_root = root;
+        m_workingSolution = workingSolution;
+    }
 
 
     private Dlx(bool[/* col */, /* row */] matrix)
@@ -126,6 +211,51 @@ public class Dlx
     }
 
 
+    private static (ColumnNode ClonedRoot, Node? ClonedNodeOfAttention) CloneMatrix(ColumnNode root, Node? nodeOfAttention)
+    {
+        ColumnNode clonedRoot = new(root.m_name);
+        Dictionary<Node, Node> oldNodeToNewNodeMapping = new() { [root] = clonedRoot };
+
+        // First, create a copy of each node without preserving any of the links.  Map each copy to its original.
+
+        for (ColumnNode columnHeader = (ColumnNode) root.m_right; columnHeader != root; columnHeader = (ColumnNode) columnHeader.m_right)
+        {
+            ColumnNode clonedColumnHeader = new(columnHeader.m_name);
+            oldNodeToNewNodeMapping.Add(columnHeader, clonedColumnHeader);
+
+            for (Node node = columnHeader.m_below; node != columnHeader; node = node.m_below)
+            {
+                oldNodeToNewNodeMapping.Add(node, new Node(clonedColumnHeader, node.m_row));
+            }
+        }
+
+        // Now, go through all the copied nodes and recreate their links.
+
+        foreach (var kv in oldNodeToNewNodeMapping)
+        {
+            Node originalNode = kv.Key;
+            Node clonedNode = kv.Value;
+
+            clonedNode.m_left = oldNodeToNewNodeMapping[originalNode.m_left];
+            clonedNode.m_right = oldNodeToNewNodeMapping[originalNode.m_right];
+            clonedNode.m_above = oldNodeToNewNodeMapping[originalNode.m_above];
+            clonedNode.m_below = oldNodeToNewNodeMapping[originalNode.m_below];
+
+            ++clonedNode.m_column.m_size;
+        }
+
+        return (clonedRoot, nodeOfAttention is null ? null : oldNodeToNewNodeMapping[nodeOfAttention]);
+    }
+
+
+    private static (Dlx ClonedDlx, Node? ClonedNodeOfAttention) Clone(Dlx cloneFrom, Node? nodeOfAttention)
+    {
+        var (clonedRoot, clonedNodeOfAttention) = CloneMatrix(cloneFrom.m_root, nodeOfAttention);
+
+        return (new Dlx(clonedRoot, new HashSet<int>(cloneFrom.m_workingSolution)), clonedNodeOfAttention);
+    }
+
+
     private static void LinkNodeToRow(Node neighborToLeft, Node nodeToAdd)
     {
         nodeToAdd.m_left = neighborToLeft;
@@ -155,7 +285,7 @@ public class Dlx
         // for each row in the column
         for (Node row = column.m_below; row != column; row = row.m_below)
         {
-            ++progressMetrics.RowsRemoved;
+            progressMetrics.IncrementRowsRemoved();
 
             // for each node in the row
             for (Node right = row.m_right; right != row; right = right.m_right)
@@ -210,11 +340,57 @@ public class Dlx
     }
 
 
-    // Solve, the recursive function
-    //
-    private void Solve (ProgressMetrics progressMetrics, int solutionLimit, CancellationToken cancelToken)
+    private static IEnumerable<Node> GetRowsAsEnumerable(ColumnNode column)
     {
-        ++progressMetrics.RecursivePasses;
+        for (Node row = column.m_below; row != column; row = row.m_below)
+        {
+            yield return row;
+        }
+    }
+
+
+    private void ConsiderRow(Node row, ProgressMetrics progressMetrics, CancellationToken cancelToken)
+    {
+        // This function was broken out of the Solve function.  It used to be the main body of the loop.
+        // I've separated it to make it easier to call from both the regular solver and the parallel solver.
+
+        m_workingSolution.Add(row.m_row);  // propose a solution
+
+        // for each node in the row
+        for (Node nodeInRow = row.m_right; nodeInRow != row; nodeInRow = nodeInRow.m_right)
+        {
+            CoverColumn(nodeInRow.m_column, progressMetrics);  // Cover the column
+        }
+
+        this.Solve(progressMetrics, cancelToken);  // recurse
+
+        // backtrack (reject the proposed solution)
+        m_workingSolution.Remove(row.m_row);
+
+        // for each node in reverse order
+        for (Node nodeInRow = row.m_left; nodeInRow != row; nodeInRow = nodeInRow.m_left)
+        {
+            UncoverColumn(nodeInRow.m_column);  // Uncover the column
+        }
+    }
+
+
+    // Here's an attempt to parallize the solver.  I didn't spend a lot of time on it, though I did verify
+    // that it works.  There are opportunities to improve it.  The strategy of the parallel solver is to
+    // parallelize the loop of our top-level pass only.  There will be no further parallelization during
+    // the recursive stages.  The recursive solver is destructive to the matrix, although it does repair
+    // its damage before continuing.  Unfortunately, that means we can't use the same matrix when we
+    // work on multiple rows at the same time.  Consequently, I clone the entire matrix for each parallel
+    // iteration.  That negates at least some portion of the parallel benefits, but not all.  At least,
+    // not with the matrixes in use here.
+    //
+    // One possible avenue for improvement might be to clone the matrix only once per thread and then
+    // reuse that clone for all the work done on that thread.  That would require a queue of work for each
+    // thread, ensuring that the passes queued for each thread never overlap.
+    //
+    private void ParallelSolve(ProgressMetrics progressMetrics, CancellationToken cancelToken)
+    {
+        progressMetrics.IncrementRecursivePasses();
 
         if (cancelToken.IsCancellationRequested)
             return;
@@ -223,12 +399,73 @@ public class Dlx
         {
             // Since there are no more columns, we must have covered everything successfully. 
 
-            // REVIEW$:  When the number of solutions is large, the performance gets **REALLY**
-            // bad.  Probably from having to resize the large array.
+            progressMetrics.CollectSolution(m_workingSolution.ToHashSet());
+            return;
+        }
 
-            m_confirmedSolutions.Add(m_workingSolution.ToHashSet());
-            ++progressMetrics.SolutionCount;
+        // Otherwise, we need to keep looking.  We'll start by considering the column with the
+        // fewest values in it.  This will allow us to rule out bad rows more quickly.
 
+        ColumnNode column = this.FindSmallestColumn();
+        if (column.m_size == 0)
+            return;  // No more options in this column, so this solution is a bust.
+
+        Parallel.ForEach(GetRowsAsEnumerable(column), (loopRowStart, loopState) =>
+        {
+            if (cancelToken.IsCancellationRequested)
+            {
+                loopState.Stop();
+                return;
+            }
+
+            (Dlx clonedDlx, Node? clonedloopRowStart) = Dlx.Clone(this, loopRowStart);
+
+            // In the non-parallel algorithm, we cover the column before we begin the loop.  That's because
+            // it only needs to be done once, and the column is still available (though disconnected) for
+            // the loop to use.
+            // 
+            // Here, however, we don't want the loop to work on the disconnected column.  We need the loop
+            // to work on a clone of the column.  That means we can't disconnect it until after we clone
+            // the matrix, which we do inside the loop.
+            //
+            // On the other hand, we don't have to worry about reconnecting the column when we're done,
+            // since the cloned matrix goes out of scope as soon as we leave the loop.
+
+            CoverColumn(clonedloopRowStart!.m_column, progressMetrics);
+
+            clonedDlx.ConsiderRow(clonedloopRowStart, progressMetrics, cancelToken);
+
+            if (progressMetrics.SolutionLimitReached())
+            {
+                loopState.Stop();
+                return;
+            }
+
+            // As indicated above, there's no need to restore the covered column
+            // UncoverColumn(clonedloopRowStart!.m_column);
+        });
+
+        // We've exhausted all the rows and still haven't covered all the columns, so this
+        // combination's a bust.
+
+        UncoverColumn(column);
+    }
+
+
+    // Solve, the recursive function
+    //
+    private void Solve(ProgressMetrics progressMetrics, CancellationToken cancelToken)
+    {
+        progressMetrics.IncrementRecursivePasses();
+
+        if (cancelToken.IsCancellationRequested)
+            return;
+
+        if (m_root.m_right == m_root)
+        {
+            // Since there are no more columns, we must have covered everything successfully. 
+
+            progressMetrics.CollectSolution(m_workingSolution.ToHashSet());
             return;
         }
 
@@ -246,27 +483,9 @@ public class Dlx
             if (cancelToken.IsCancellationRequested)
                 break;
 
-            m_workingSolution.Add(row.m_row);  // propose a solution
+            this.ConsiderRow(row, progressMetrics, cancelToken);
 
-            // for each node in the row
-            for (Node nodeInRow = row.m_right; nodeInRow != row; nodeInRow = nodeInRow.m_right)
-            {
-                CoverColumn(nodeInRow.m_column, progressMetrics);  // Cover the column
-            }
-
-            this.Solve(progressMetrics, solutionLimit, cancelToken);  // recurse
-
-            // backtrack (reject the proposed solution)
-            m_workingSolution.Remove(row.m_row);
-            column = row.m_column;
-
-            // for each node in reverse order
-            for (Node nodeInRow = row.m_left; nodeInRow != row; nodeInRow = nodeInRow.m_left)
-            {
-                UncoverColumn(nodeInRow.m_column);  // Uncover the column
-            }
-
-            if (solutionLimit == m_confirmedSolutions.Count)
+            if (progressMetrics.SolutionLimitReached())
                 break;
         }
 
@@ -277,18 +496,20 @@ public class Dlx
     }
 
 
-    public static List<HashSet<int>> Solve(bool[/* col */, /* row */] matrix, int solutionLimit, CancellationToken cancelToken, ProgressMetrics? progressMetrics = null)
+    public static void Solve(bool[/* col */, /* row */] matrix, bool parallelSolver, CancellationToken cancelToken, ProgressMetrics? progressMetrics = null)
     {
         progressMetrics ??= new();
-        progressMetrics.SolutionCount = 0;
+        progressMetrics.ResetSolutionCount();
 
-        if (solutionLimit <= 0)
-            return new();
+        if (progressMetrics.SolutionLimit <= 0)
+            return;
 
         Dlx dlx = new(matrix);
-        dlx.Solve(progressMetrics, solutionLimit, cancelToken);
 
-        return dlx.m_confirmedSolutions;
+        if (parallelSolver)
+            dlx.ParallelSolve(progressMetrics, cancelToken);
+        else
+            dlx.Solve(progressMetrics, cancelToken);
     }
 
 
