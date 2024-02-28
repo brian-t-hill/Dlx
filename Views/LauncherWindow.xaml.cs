@@ -43,7 +43,7 @@ public partial class LauncherWindow : Window
         window.Show();
     }
 
-    private void OnNavigateToGitHub(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    private void OnNavigateToUri(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
     {
         using Process? process = Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
         e.Handled = true;

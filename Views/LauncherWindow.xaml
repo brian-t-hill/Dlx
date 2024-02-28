@@ -6,29 +6,41 @@
         xmlns:local="clr-namespace:Pentomino"
         mc:Ignorable="d"
         Title="{x:Static local:LocalizableStrings.idsApplicationName}" SizeToContent="WidthAndHeight">
-    <Grid>
+
+    <Grid Grid.IsSharedSizeScope="true" >
+
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="10" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="15" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="30" />
+            <RowDefinition Height="20" />    <!-- gutter -->
+            <RowDefinition Height="Auto" />  <!-- buttons -->
+            <RowDefinition Height="20" />    <!-- gutter -->
+            <RowDefinition Height="Auto" />  <!-- hyperlink 1 -->
+            <RowDefinition Height="5" />    <!-- gutter -->
+            <RowDefinition Height="Auto" />  <!-- hyperlink 2 -->
+            <RowDefinition Height="20" />    <!-- gutter -->
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="20" />    <!-- gutter -->
+            <ColumnDefinition Width="90" />    <!-- text begin -->
+            <ColumnDefinition Width="Auto" SharedSizeGroup="A" />  <!-- button 1-->
+            <ColumnDefinition Width="20" />    <!-- gutter -->
+            <ColumnDefinition Width="Auto" SharedSizeGroup="A" />  <!-- button 2 -->
+            <ColumnDefinition Width="90" />    <!-- text end -->
+            <ColumnDefinition Width="20" />    <!-- gutter -->
         </Grid.ColumnDefinitions>
 
-        <Button Grid.Column="1" Grid.Row="1" Padding="15,5,15,5" Click="OnNewPentominoesWindow" Content="{x:Static local:LocalizableStrings.idsLaunchPentominoesButton}"></Button>
-        <Button Grid.Column="1" Grid.Row="3" Padding="15,5,15,5" Click="OnNewSudokuWindow" Content="{x:Static local:LocalizableStrings.idsLaunchSudokuButton}"></Button>
+        <Button Grid.Column="2" Grid.Row="1" Padding="15,5,15,5" Click="OnNewPentominoesWindow" Content="{x:Static local:LocalizableStrings.idsLaunchPentominoesButton}"></Button>
+        <Button Grid.Column="4" Grid.Row="1" Padding="15,5,15,5" Click="OnNewSudokuWindow" Content="{x:Static local:LocalizableStrings.idsLaunchSudokuButton}"></Button>
 
-        <TextBlock Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="3" HorizontalAlignment="Center">
-            <Hyperlink NavigateUri="https://github.com/brian-t-hill/Dlx" RequestNavigate="OnNavigateToGitHub" >
+        <TextBlock Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="5" HorizontalAlignment="Center">
+            <Hyperlink NavigateUri="https://github.com/brian-t-hill/Dlx" RequestNavigate="OnNavigateToUri" >
                 https://github.com/brian-t-hill/Dlx
+            </Hyperlink>
+        </TextBlock>
+
+        <TextBlock Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="5" HorizontalAlignment="Center">
+            <Hyperlink NavigateUri="https://github.com/brian-t-hill/Dlx/raw/main/Docs/Dancing Links.pptx" RequestNavigate="OnNavigateToUri" >
+                https://github.com/brian-t-hill/Dlx/raw/main/Docs/Dancing Links.pptx
             </Hyperlink>
         </TextBlock>
         
