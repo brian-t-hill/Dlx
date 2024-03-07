@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Ink;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
-using Pentomino.Algorithms;
 using Pentomino.Helpers;
 
-using static Pentomino.Algorithms.Dlx;
-using static Pentomino.Algorithms.PentominoMatrix;
 
 namespace Pentomino.ViewModels;
 
@@ -34,7 +22,7 @@ public class SudokuViewModel : SolvingBaseViewModel
 
     public override void OnPickNextSolution(bool prev = false)
     {
-        if (this.IsSolving || m_sudokuMatrix is null)
+        if (this.IsSolving || m_sudokuMatrixRows is null)
             return;
 
         if (this.Solutions.Count == 0)
@@ -62,12 +50,12 @@ public class SudokuViewModel : SolvingBaseViewModel
         this.CurrentSolution = (proposedSolution >= 0 && proposedSolution < this.Solutions.Count ? proposedSolution : wrapAround);
         HashSet<int> solution = this.Solutions[this.RandomizedSolutionIndexes[this.CurrentSolution]];
 
-        int[/* row */][/* col */] output = Algorithms.SudokuMatrix.MakeOutputsFromSolution(solution, m_sudokuMatrix, deshuffledRowIndexes: null);
+        int[/* row */][/* col */] output = Algorithms.SudokuMatrix.MakeOutputsFromSolution(solution, 9, deshuffledRowIndexes: null);
         this.OutputSudokuControlViewModel.ApplyOutputToBoard(output);
     }
 
 
-    private bool[/* col */, /* row */]? m_sudokuMatrix = null;
+    private List<bool[]>? m_sudokuMatrixRows = null;
 
 
     private async Task SolveAsync()
@@ -75,7 +63,7 @@ public class SudokuViewModel : SolvingBaseViewModel
         this.ResetCancellationTokenSource();
 
         int[/* row */][/* col */] boardInputs = this.InputSudokuControlViewModel.CreateMatrix9x9InputsFromBoard();
-        m_sudokuMatrix = Algorithms.SudokuMatrix.MakeMatrix(boardInputs, shuffledRowIndexes: null);
+        m_sudokuMatrixRows = Algorithms.SudokuMatrix.MakeMatrix(boardInputs, shuffledRowIndexes: null);
 
         CancellationToken cancelToken = this.SolverCancellationToken;
 
@@ -84,7 +72,7 @@ public class SudokuViewModel : SolvingBaseViewModel
 
         await Task.Run(() =>
         {
-            Algorithms.Dlx.Solve(m_sudokuMatrix, parallelSolver: true, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
+            Algorithms.Dlx.Solve(m_sudokuMatrixRows, parallelSolver: true, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
         });
 
         this.IsSolving = false;

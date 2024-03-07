@@ -120,6 +120,9 @@
   <data name="idsApplicationName" xml:space="preserve">
     <value>Dancing Links Demo</value>
   </data>
+  <data name="idsCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
   <data name="idsCancelButton" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -129,6 +132,12 @@
   <data name="idsDurationLabel" xml:space="preserve">
     <value>Duration: </value>
   </data>
+  <data name="idsGetMonthAndDayDialogTitle" xml:space="preserve">
+    <value>Select Month and Day</value>
+  </data>
+  <data name="idsLaunchCalendarPentominoesButton" xml:space="preserve">
+    <value>Calendar Pentominoes...</value>
+  </data>
   <data name="idsLaunchPentominoesButton" xml:space="preserve">
     <value>Pentominoes...</value>
   </data>
@@ -137,6 +146,45 @@
   </data>
   <data name="idsLeftArrow" xml:space="preserve">
     <value>˂</value>
+  </data>
+  <data name="idsMonthName_April" xml:space="preserve">
+    <value>April</value>
+  </data>
+  <data name="idsMonthName_August" xml:space="preserve">
+    <value>August</value>
+  </data>
+  <data name="idsMonthName_December" xml:space="preserve">
+    <value>December</value>
+  </data>
+  <data name="idsMonthName_February" xml:space="preserve">
+    <value>February</value>
+  </data>
+  <data name="idsMonthName_January" xml:space="preserve">
+    <value>January</value>
+  </data>
+  <data name="idsMonthName_July" xml:space="preserve">
+    <value>July</value>
+  </data>
+  <data name="idsMonthName_June" xml:space="preserve">
+    <value>June</value>
+  </data>
+  <data name="idsMonthName_March" xml:space="preserve">
+    <value>March</value>
+  </data>
+  <data name="idsMonthName_May" xml:space="preserve">
+    <value>May</value>
+  </data>
+  <data name="idsMonthName_November" xml:space="preserve">
+    <value>November</value>
+  </data>
+  <data name="idsMonthName_October" xml:space="preserve">
+    <value>October</value>
+  </data>
+  <data name="idsMonthName_September" xml:space="preserve">
+    <value>September</value>
+  </data>
+  <data name="idsOk" xml:space="preserve">
+    <value>OK</value>
   </data>
   <data name="idsPentominoesWindowTitle" xml:space="preserve">
     <value>Pentominoes</value>

@@ -72,6 +72,15 @@ namespace Pentomino {
         /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
+        public static string idsCancel {
+            get {
+                return ResourceManager.GetString("idsCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
         public static string idsCancelButton {
             get {
                 return ResourceManager.GetString("idsCancelButton", resourceCulture);
@@ -93,6 +102,24 @@ namespace Pentomino {
         public static string idsDurationLabel {
             get {
                 return ResourceManager.GetString("idsDurationLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Month and Day.
+        /// </summary>
+        public static string idsGetMonthAndDayDialogTitle {
+            get {
+                return ResourceManager.GetString("idsGetMonthAndDayDialogTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calendar Pentominoes....
+        /// </summary>
+        public static string idsLaunchCalendarPentominoesButton {
+            get {
+                return ResourceManager.GetString("idsLaunchCalendarPentominoesButton", resourceCulture);
             }
         }
         
@@ -120,6 +147,123 @@ namespace Pentomino {
         public static string idsLeftArrow {
             get {
                 return ResourceManager.GetString("idsLeftArrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to April.
+        /// </summary>
+        public static string idsMonthName_April {
+            get {
+                return ResourceManager.GetString("idsMonthName_April", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to August.
+        /// </summary>
+        public static string idsMonthName_August {
+            get {
+                return ResourceManager.GetString("idsMonthName_August", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to December.
+        /// </summary>
+        public static string idsMonthName_December {
+            get {
+                return ResourceManager.GetString("idsMonthName_December", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to February.
+        /// </summary>
+        public static string idsMonthName_February {
+            get {
+                return ResourceManager.GetString("idsMonthName_February", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to January.
+        /// </summary>
+        public static string idsMonthName_January {
+            get {
+                return ResourceManager.GetString("idsMonthName_January", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to July.
+        /// </summary>
+        public static string idsMonthName_July {
+            get {
+                return ResourceManager.GetString("idsMonthName_July", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to June.
+        /// </summary>
+        public static string idsMonthName_June {
+            get {
+                return ResourceManager.GetString("idsMonthName_June", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to March.
+        /// </summary>
+        public static string idsMonthName_March {
+            get {
+                return ResourceManager.GetString("idsMonthName_March", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to May.
+        /// </summary>
+        public static string idsMonthName_May {
+            get {
+                return ResourceManager.GetString("idsMonthName_May", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to November.
+        /// </summary>
+        public static string idsMonthName_November {
+            get {
+                return ResourceManager.GetString("idsMonthName_November", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to October.
+        /// </summary>
+        public static string idsMonthName_October {
+            get {
+                return ResourceManager.GetString("idsMonthName_October", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to September.
+        /// </summary>
+        public static string idsMonthName_September {
+            get {
+                return ResourceManager.GetString("idsMonthName_September", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string idsOk {
+            get {
+                return ResourceManager.GetString("idsOk", resourceCulture);
             }
         }
         

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Security.Policy;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-
-using static Pentomino.Algorithms.Dlx;
 
 namespace Pentomino.Algorithms;
 
@@ -170,9 +164,12 @@ public class Dlx
     }
 
 
-    private Dlx(bool[/* col */, /* row */] matrix)
+    private Dlx(List<bool[]> matrixRows)
     {
-        int numberOfColumns = matrix.GetLength(0);
+        if (matrixRows.Count == 0)
+            return;
+
+        int numberOfColumns = matrixRows[0].Length;
         ColumnNode[] columns = new ColumnNode[numberOfColumns];
 
         // Create the column header nodes
@@ -185,15 +182,18 @@ public class Dlx
 
         // Add all the matrix values as nodes
 
-        int numberOfRows = matrix.GetLength(1);
+        int numberOfRows = matrixRows.Count;
 
         for (int jj = 0; jj < numberOfRows; ++jj)
         {
+            bool[] matrixRow = matrixRows[jj];
+            Debug.Assert(matrixRow.Length == numberOfColumns);
+
             Node? mostRecentNodeInCurrentRow = null;
 
             for (int kk = 0; kk < numberOfColumns; ++kk)
             {
-                if (matrix[kk, jj] == true)  // We only create nodes for cells that contain a value
+                if (matrixRow[kk] == true)  // We only create nodes for cells that contain a value
                 {
                     ColumnNode columnHeader = columns[kk];
 
@@ -278,6 +278,15 @@ public class Dlx
 
     private static void CoverColumn(ColumnNode column, ProgressMetrics progressMetrics)
     {
+        // I'm not thrilled with the name of this function, CoverColumn, but I guess it's as good as any
+        // I've come up with.
+        //
+        // This function will remove the indicated column from the matrix, but that's not all.  Because
+        // only one row is allowed to cover the column, we remove all other rows that also cover it.  We
+        // don't actually know which row is supposed to be the one covering it, so we remove all of them.
+        // That's okay because the algorithm will still read the column (even after it's removed) in
+        // order to consider each of the covering rows, one at a time.
+
         // unlink column
         column.m_right.m_left = column.m_left;
         column.m_left.m_right = column.m_right;
@@ -496,7 +505,7 @@ public class Dlx
     }
 
 
-    public static void Solve(bool[/* col */, /* row */] matrix, bool parallelSolver, CancellationToken cancelToken, ProgressMetrics? progressMetrics = null)
+    public static void Solve(List<bool[]> matrixRows, bool parallelSolver, CancellationToken cancelToken, ProgressMetrics? progressMetrics = null)
     {
         progressMetrics ??= new();
         progressMetrics.ResetSolutionCount();
@@ -504,7 +513,7 @@ public class Dlx
         if (progressMetrics.SolutionLimit <= 0)
             return;
 
-        Dlx dlx = new(matrix);
+        Dlx dlx = new(matrixRows);
 
         if (parallelSolver)
             dlx.ParallelSolve(progressMetrics, cancelToken);

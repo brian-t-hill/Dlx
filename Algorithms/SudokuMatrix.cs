@@ -4,13 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-
-using static Pentomino.ViewModels.SudokuControlViewModel;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Pentomino.Algorithms;
 
@@ -50,7 +44,7 @@ public static class SudokuMatrix
     }
 
 
-    private static int GetNumberOfColumnsForDimension(int dimension)
+    private static int GetNumberOfMatrixColumnsForDimension(int dimension)
     {
         // We need d*d columns for the row/column constraint.
         // We need d*d columns for the row/digit constraint.
@@ -61,18 +55,18 @@ public static class SudokuMatrix
     }
 
 
-    private static int GetNumberOfRowsForDimension(int dimension)
+    private static int GetNumberOfMatrixRowsForDimension(int dimension)
     {
-        // Each row and column can have any of the digits.
-        // The number of rows is equal to the dimension.
-        // So is the number of columns.
+        // Each Sudoku row and column can have any of the digits.
+        // The number of Sudoku rows is equal to the dimension.
+        // So is the number of Sudoku columns.
         // So is the number of digits.
 
         return dimension * dimension * dimension;
     }
 
 
-    private static int GetDimensionFromNumberOfColumns(int numberOfColumns)
+    private static int GetDimensionFromNumberOfMatrixColumns(int numberOfColumns)
     {
         // We need d*d columns for the row/column constraint.
         // We need d*d columns for the row/digit constraint.
@@ -97,15 +91,15 @@ public static class SudokuMatrix
     }
 
 
-    public static bool[/* col */, /* row */] MakePlainMatrix(int dimension, int[]? shuffledRowIndexes)
+    public static List<bool[]> MakePlainMatrix(int dimension, int[]? shuffledRowIndexes)
     {
-        int numberOfColumns = GetNumberOfColumnsForDimension(dimension);
-        int numberOfRows = GetNumberOfRowsForDimension(dimension);
+        int numberOfMatrixColumns = GetNumberOfMatrixColumnsForDimension(dimension);
+        int numberOfMatrixRows = GetNumberOfMatrixRowsForDimension(dimension);
         int boxDimension = (int) Math.Sqrt(dimension);
 
-        bool[,] matrix = new bool[numberOfColumns, numberOfRows];
+        List<bool[]> matrixRows = Enumerable.Repeat(0, numberOfMatrixRows).Select(n => new bool[numberOfMatrixColumns]).ToList();
 
-        int column = 0;
+        int matrixColumnIndex = 0;
 
         // row-column constraints
 
@@ -115,10 +109,10 @@ public static class SudokuMatrix
             {
                 for (int d = 1; d <= dimension; ++d)
                 {
-                    matrix[column, GetRowIndex(dimension, y, x, d, shuffledRowIndexes)] = true;
+                    matrixRows[GetRowIndex(dimension, y, x, d, shuffledRowIndexes)][matrixColumnIndex] = true;
                 }
 
-                ++column;
+                ++matrixColumnIndex;
             }
         }
 
@@ -130,10 +124,10 @@ public static class SudokuMatrix
             {
                 for (int x = 1; x <= dimension; ++x)
                 {
-                    matrix[column, GetRowIndex(dimension, y, x, d, shuffledRowIndexes)] = true;
+                    matrixRows[GetRowIndex(dimension, y, x, d, shuffledRowIndexes)][matrixColumnIndex] = true;
                 }
 
-                ++column;
+                ++matrixColumnIndex;
             }
         }
 
@@ -145,10 +139,10 @@ public static class SudokuMatrix
             {
                 for (int y = 1; y <= dimension; ++y)
                 {
-                    matrix[column, GetRowIndex(dimension, y, x, d, shuffledRowIndexes)] = true;
+                    matrixRows[GetRowIndex(dimension, y, x, d, shuffledRowIndexes)][matrixColumnIndex] = true;
                 }
 
-                ++column;
+                ++matrixColumnIndex;
             }
         }
 
@@ -164,26 +158,26 @@ public static class SudokuMatrix
                     {
                         for (int deltaX = 0; deltaX < boxDimension; ++deltaX)
                         {
-                            matrix[column, GetRowIndex(dimension, boxY + deltaY, boxX + deltaX, d, shuffledRowIndexes)] = true;
+                            matrixRows[GetRowIndex(dimension, boxY + deltaY, boxX + deltaX, d, shuffledRowIndexes)][matrixColumnIndex] = true;
                         }
                     }
 
-                    ++column;
+                    ++matrixColumnIndex;
                 }
             }
         }
 
-        return matrix;
+        return matrixRows;
     }
 
 
-    public static bool[/* col */, /* row */] MakeMatrix(int[/* row */][/* col */] inputs, int[]? shuffledRowIndexes)
+    public static List<bool[]> MakeMatrix(int[/* row */][/* col */] inputs, int[]? shuffledRowIndexes)
     {
         int dimension = inputs.Length;
 
-        int numberOfColumns = GetNumberOfColumnsForDimension(dimension);
+        int numberOfMatrixColumns = GetNumberOfMatrixColumnsForDimension(dimension);
 
-        bool[,] matrix = MakePlainMatrix(dimension, shuffledRowIndexes);
+        List<bool[]> matrixRows = MakePlainMatrix(dimension, shuffledRowIndexes);
 
         for (int y = 1; y <= dimension; ++y)
         {
@@ -205,9 +199,9 @@ public static class SudokuMatrix
                         {
                             int matrixRowIndex = GetRowIndex(dimension, y, x, d, shuffledRowIndexes);
 
-                            for (int column = 0; column < numberOfColumns; ++column)
+                            for (int matrixColumnIndex = 0; matrixColumnIndex < numberOfMatrixColumns; ++matrixColumnIndex)
                             {
-                                matrix[column, matrixRowIndex] = false;
+                                matrixRows[matrixRowIndex][matrixColumnIndex] = false;
                             }
                         }
                     }
@@ -215,7 +209,7 @@ public static class SudokuMatrix
             }
         }
 
-        return matrix;
+        return matrixRows;
     }
 
 
@@ -238,7 +232,7 @@ public static class SudokuMatrix
             emptyInputs[y] = new int[dimension];
         }
 
-        int[] shuffledRowIndexes = Enumerable.Range(0, GetNumberOfRowsForDimension(dimension)).ToArray().Shuffle();
+        int[] shuffledRowIndexes = Enumerable.Range(0, GetNumberOfMatrixRowsForDimension(dimension)).ToArray().Shuffle();
         int[] deshuffledRowIndexes = new int[shuffledRowIndexes.Length];
 
         for (int jj = 0; jj < deshuffledRowIndexes.Length; ++jj)
@@ -246,15 +240,15 @@ public static class SudokuMatrix
             deshuffledRowIndexes[shuffledRowIndexes[jj]] = jj;
         }
 
-        bool[/* col */, /* row */] matrix = MakeMatrix(emptyInputs, shuffledRowIndexes);
+        List<bool[]> matrixRows = MakeMatrix(emptyInputs, shuffledRowIndexes);
 
         Dlx.ProgressMetrics progressMetrics = new() { SolutionLimit = 1 }; 
-        Dlx.Solve(matrix, parallelSolver: false, CancellationToken.None, progressMetrics);
+        Dlx.Solve(matrixRows, parallelSolver: false, CancellationToken.None, progressMetrics);
 
         List<HashSet<int>> solutions = progressMetrics.GetConfirmedSolutions();
         Debug.Assert(solutions.Count == 1);
 
-        return MakeOutputsFromSolution(solutions.First(), matrix, deshuffledRowIndexes);
+        return MakeOutputsFromSolution(solutions.First(), dimension, deshuffledRowIndexes);
     }
 
 
@@ -273,7 +267,7 @@ public static class SudokuMatrix
         while (randomizedSpaces.Count > 0)
         {
             // A full, completed grid will have only one solution, of course.  Starting there, we'll pick a
-            // random digit ant remove it.  Then we'll test to see if there is still just a signle solution.
+            // random digit and remove it.  Then we'll test to see if there is still just a single solution.
             // If there is, we may not have removed enough, so we'll loop back and remove another digit.
             // But if there are multiple solutions, then we'll put the digit back and loop back to try
             // removing another digit.  We'll continue until we've tried removing all the digits.
@@ -287,9 +281,9 @@ public static class SudokuMatrix
             int removedDigit = inputs[row][column];
             inputs[row][column] = 0;
 
-            bool[/* col */, /* row */] matrix = Algorithms.SudokuMatrix.MakeMatrix(inputs, shuffledRowIndexes: null);
+            List<bool[]> matrixRows = Algorithms.SudokuMatrix.MakeMatrix(inputs, shuffledRowIndexes: null);
             Dlx.ProgressMetrics progressMetrics = new() { SolutionLimit = 2, CountSolutionsWithoutCollecting = true };
-            Algorithms.Dlx.Solve(matrix, parallelSolver: false, CancellationToken.None, progressMetrics);
+            Algorithms.Dlx.Solve(matrixRows, parallelSolver: false, CancellationToken.None, progressMetrics);
 
             if (progressMetrics.SolutionCount > 1)
                 inputs[row][column] = removedDigit;
@@ -306,11 +300,8 @@ public static class SudokuMatrix
     }
 
 
-    public static int[/* row */][/* col */] MakeOutputsFromSolution(HashSet<int> solution, bool[/* col */, /* row */] matrix, int[]? deshuffledRowIndexes)
+    public static int[/* row */][/* col */] MakeOutputsFromSolution(HashSet<int> solution, int dimension, int[]? deshuffledRowIndexes)
     {
-        int dimension = GetDimensionFromNumberOfColumns(matrix.GetLength(0));
-        Debug.Assert(dimension == GetDimensionFromNumberOfRows(matrix.GetLength(1)));
-
         int[/* row */][/* col */] output = new int[dimension][];
 
         for (int y = 0; y < dimension; ++y)

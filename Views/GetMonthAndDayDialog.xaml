@@ -1,0 +1,76 @@
+﻿<Window x:Class="Pentomino.Views.GetMonthAndDayDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Pentomino"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        Title="{x:Static local:LocalizableStrings.idsGetMonthAndDayDialogTitle}"
+        >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="10" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="10" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="1">
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="10" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="10" />
+            </Grid.ColumnDefinitions>
+
+            <Label
+                Grid.Column="1"
+                Content="Month:"
+                HorizontalAlignment="Right"
+                />
+
+            <ComboBox
+                Grid.Column="3"
+                ItemsSource="{Binding AvailableMonths}"
+                SelectedIndex="{Binding Month}"
+                />
+
+            <Label
+                Grid.Column="5"
+                Content="Date:"
+                HorizontalAlignment="Right"
+                />
+
+            <ComboBox
+                Grid.Column="7"
+                ItemsSource="{Binding AvailableDates}"
+                SelectedIndex="{Binding Date}"
+                />
+
+        </Grid>
+
+        <Grid Grid.Row="3" Grid.IsSharedSizeScope="true" >
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="A" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="A" />
+                <ColumnDefinition Width="10" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="1" Padding="15,5,15,5" Click="OnOk" Content="{x:Static local:LocalizableStrings.idsOk}" IsDefault="True" />
+            <Button Grid.Column="3" Padding="15,5,15,5" Click="OnCancel" Content="{x:Static local:LocalizableStrings.idsCancel}" IsCancel="True" />
+        </Grid>
+    </Grid>
+</Window>

@@ -2,137 +2,25 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Ink;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 using Pentomino.Algorithms;
 using Pentomino.Helpers;
 
-using static Pentomino.Algorithms.Dlx;
 using static Pentomino.Algorithms.PentominoMatrix;
+using static Pentomino.Algorithms.PentominoShapeCollections;
 
 namespace Pentomino.ViewModels;
 
 public class PentominoViewModel : SolvingBaseViewModel
 {
-    private const int k_F_Index = 0;
-    private const int k_L_Index = 1;
-    private const int k_I_Index = 2;
-    private const int k_P_Index = 3;
-    private const int k_S_Index = 4;
-    private const int k_T_Index = 5;
-    private const int k_U_Index = 6;
-    private const int k_V_Index = 7;
-    private const int k_W_Index = 8;
-    private const int k_X_Index = 9;
-    private const int k_Y_Index = 10;
-    private const int k_Z_Index = 11;
-    private const int k_Border_Index = 12;
-
-    private static readonly Brush[] Brushes = new Brush[]
-    {
-        /* F */ new SolidColorBrush(Colors.Peru),
-        /* L */ new SolidColorBrush(Colors.Red),
-        /* I */ new SolidColorBrush(Colors.LightSteelBlue),
-        /* P */ new SolidColorBrush(Colors.Yellow),
-        /* S */ new SolidColorBrush(Colors.DarkGray),
-        /* T */ new SolidColorBrush(Colors.Firebrick),
-        /* U */ new SolidColorBrush(Colors.DarkOrchid),
-        /* V */ new SolidColorBrush(Colors.RoyalBlue),
-        /* W */ new SolidColorBrush(Colors.Lime),
-        /* X */ new SolidColorBrush(Colors.NavajoWhite),
-        /* Y */ new SolidColorBrush(Colors.Green),
-        /* Z */ new SolidColorBrush(Colors.Aquamarine),
-
-        /* | */ new SolidColorBrush(Colors.Black),  // k_Border_Index
-    };
-
-
     public PentominoViewModel()
     {
-        this.Shapes = new Shape[]
-        {
-            // . F F
-            // F F .
-            // . F .
-            new Polygon() { Points = new() { new(100, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) } },
-
-            // L .
-            // L .
-            // L .
-            // L L
-            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 300), new(200, 300), new(200, 400), new(0, 400) } },
-
-            // I
-            // I
-            // I
-            // I
-            // I
-            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 500), new(0, 500) } },
-
-            // P P
-            // P P
-            // P .
-            new Polygon() { Points = new() { new(0, 0), new(200, 0), new(200, 200), new(100, 200), new(100, 300), new(0, 300) } },
-
-            // S
-            // S S
-            // . S
-            // . S
-            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 400), new(100, 400), new(100, 200), new(0, 200) } },
-
-            // T T T
-            // . T .
-            // . T .
-            new Polygon() { Points = new() { new(0, 0), new(300, 0), new(300, 100), new(200, 100), new(200, 300), new(100, 300), new(100, 100), new(0, 100) } },
-
-            // U . U
-            // U U U
-            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 0), new(300, 0), new(300, 200), new(0, 200) } },
-
-            // V . .
-            // V . .
-            // V V V
-            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 200), new(300, 200), new(300, 300), new(0, 300) } },
-
-            // W . .
-            // W W .
-            // . W W
-            new Polygon() { Points = new() { new(0, 0), new(100, 0), new(100, 100), new(200, 100), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 200), new(0, 200) } },
-
-            // . X .
-            // X X X
-            // . X .
-            new Polygon() { Points = new() { new(100, 0), new(200, 0), new(200, 100), new(300, 100), new(300, 200), new(200, 200), new(200, 300), new(100, 300), new(100, 200), new(0, 200), new(0, 100), new(100, 100) } },
-
-            // . . Y .
-            // Y Y Y Y
-            new Polygon() { Points = new() { new(200, 0), new(300, 0), new(300, 100), new(400, 100), new(400, 200), new(0, 200), new(0, 100), new(200, 100) } },
-
-            // Z Z .
-            // . Z .
-            // . Z Z
-            new Polygon() { Points = new() { new(0, 0), new(200, 0), new(200, 200), new(300, 200), new(300, 300), new(100, 300), new(100, 100), new(0, 100) } },
-        };
-
-        for (int jj = k_F_Index; jj <= k_Z_Index; ++jj)
-        {
-            this.Shapes[jj].Stroke = Brushes[k_Border_Index];
-            this.Shapes[jj].Fill = Brushes[jj];
-            this.Shapes[jj].StrokeThickness = 2;
-            this.Shapes[jj].HorizontalAlignment = HorizontalAlignment.Left;
-            this.Shapes[jj].VerticalAlignment = VerticalAlignment.Top;
-            this.Shapes[jj].RenderTransformOrigin = new(0.5, 0.5);
-
-            Canvas.SetLeft(this.Shapes[jj], 0);
-            Canvas.SetTop(this.Shapes[jj], 0);
-        }
+        this.Shapes = PentominoShapeCollections.Make10x6Shapes().ToDictionary(sd => sd.PieceId);
 
         this.ToggleRemoteControlVisibilityCommand = new(() => this.IsRemoteControlVisible = !this.IsRemoteControlVisible);
 
@@ -143,7 +31,56 @@ public class PentominoViewModel : SolvingBaseViewModel
     public PentominoesRemoteControlViewModel PentominoesRemoteControlViewModel { get; } = new();
 
 
-    public Shape[] Shapes { get; private set; }
+    private int m_boardWidth = 10;
+
+    public int BoardWidth
+    {
+        get => m_boardWidth;
+        set => this.SetProperty(ref m_boardWidth, value);
+    }
+
+
+    private int m_boardHeight = 6;
+
+    public int BoardHeight
+    {
+        get => m_boardHeight;
+        set => this.SetProperty(ref m_boardHeight, value);
+    }
+
+
+    private Dictionary<int, ShapeData> m_shapes = new();
+
+    public Dictionary<int, ShapeData> Shapes
+    {
+        get => m_shapes;
+        set => this.SetProperty(ref m_shapes, value);
+    }
+
+
+    public event EventHandler? ShapesChanged;
+
+
+    [CalledWhenPropertyChanges(nameof(Shapes))]
+    protected void OnShapesChanged()
+    {
+        foreach (ShapeData shapeData in this.Shapes.Values)
+        {
+            if (shapeData.Shape is null)
+                continue;
+
+            shapeData.Shape.Stroke = Brushes.Black;
+            shapeData.Shape.Fill = shapeData.Brush;
+            shapeData.Shape.StrokeThickness = 2;
+            shapeData.Shape.HorizontalAlignment = HorizontalAlignment.Left;
+            shapeData.Shape.VerticalAlignment = VerticalAlignment.Top;
+            shapeData.Shape.RenderTransformOrigin = new(0.5, 0.5);
+        }
+
+        var shapesChanged = this.ShapesChanged;
+        if (shapesChanged is not null)
+            shapesChanged(this, EventArgs.Empty);
+    }
 
 
     private double m_canvasScaleX = 1.0;
@@ -166,8 +103,8 @@ public class PentominoViewModel : SolvingBaseViewModel
 
     public void OnCanvasSizeChanged(double actualWidth, double actualHeight)
     {
-        this.CanvasScaleX = actualWidth / 1000.0;
-        this.CanvasScaleY = actualHeight / 600.0;
+        this.CanvasScaleX = actualWidth / (100.0 * this.BoardWidth);
+        this.CanvasScaleY = actualHeight / (100.0 * this.BoardHeight);
     }
 
 
@@ -210,7 +147,7 @@ public class PentominoViewModel : SolvingBaseViewModel
     {
         this.PentominoesRemoteControlViewModel.OneBasedCurrentSolution = this.CurrentSolution + 1;
 
-        if (m_pentominoMatrix is null || m_pentominoPlacementMetadata is null || this.CurrentSolution < 0 || this.Solutions.Count == 0 || this.CurrentSolution >= this.Solutions.Count)
+        if (m_pentominoMatrixRows is null || m_pentominoMetadataRows is null || this.CurrentSolution < 0 || this.Solutions.Count == 0 || this.CurrentSolution >= this.Solutions.Count)
             return;
 
         bool randomize = this.PentominoesRemoteControlViewModel.RandomOrder;
@@ -221,20 +158,24 @@ public class PentominoViewModel : SolvingBaseViewModel
         {
             // each row is the placement of a single piece.  We can learn about the piece and its placement from our metadata.
 
-            int piece = m_pentominoPlacementMetadata[rowIndex].Piece;
-            Shape shape = this.Shapes[piece];
+            if (m_pentominoMetadataRows[rowIndex].PieceId == (int) CommonPieceIds.None)
+                continue;
 
-            shape.RenderTransform = GetRotateAndScaleTransformsFromMetadata(m_pentominoPlacementMetadata[rowIndex]);
+            ShapeData shapeData = this.Shapes[m_pentominoMetadataRows[rowIndex].PieceId];
+            if (shapeData.Shape is null)
+                continue;
 
-            Canvas.SetLeft(shape, m_pentominoPlacementMetadata[rowIndex].LeftAdjust * 100);
-            Canvas.SetTop(shape, m_pentominoPlacementMetadata[rowIndex].TopAdjust * 100);
+            shapeData.Shape.RenderTransform = GetRotateAndScaleTransformsFromMetadata(m_pentominoMetadataRows[rowIndex]);
+
+            Canvas.SetLeft(shapeData.Shape, m_pentominoMetadataRows[rowIndex].LeftAdjust * 100);
+            Canvas.SetTop(shapeData.Shape, m_pentominoMetadataRows[rowIndex].TopAdjust * 100);
         }
     }
 
 
     public override void OnPickNextSolution(bool prev = false)
     {
-        if (this.IsSolving || m_pentominoMatrix is null || m_pentominoPlacementMetadata is null || this.Solutions.Count == 0)
+        if (this.IsSolving || m_pentominoMatrixRows is null || m_pentominoMetadataRows is null || this.Solutions.Count == 0)
             return;
 
         int currentSolution = this.CurrentSolution;
@@ -249,24 +190,39 @@ public class PentominoViewModel : SolvingBaseViewModel
     }
 
 
-    private bool[,]? m_pentominoMatrix = null;
-    private PlacementMetadata[]? m_pentominoPlacementMetadata = null;
+    private Func<IEnumerable<PentominoShapeCollections.ShapeData>, (List<bool[]> MatrixRows, List<PlacementMetadata> MetadataRows)>? m_fnCreateMatrix = null;
+
+    public Func<IEnumerable<PentominoShapeCollections.ShapeData>, (List<bool[]> MatrixRows, List<PlacementMetadata> MetadataRows)>? FnCreateMatrix
+    {
+        get => m_fnCreateMatrix;
+        set => this.SetProperty(ref m_fnCreateMatrix, value);
+    }
+
+
+    private List<bool[]>? m_pentominoMatrixRows = null;
+    private List<PlacementMetadata>? m_pentominoMetadataRows = null;
+
 
     public async Task OnLoadedAsync(object sender, RoutedEventArgs e)
     {
         this.ResetCancellationTokenSource();
 
-        (m_pentominoMatrix, m_pentominoPlacementMetadata) = Algorithms.PentominoMatrix.MakeMatrixFor10x6WithMetadata();
-
         CancellationToken cancelToken = this.SolverCancellationToken;
 
         this.DlxMetricsControlViewModel.ResetMetrics();
-        this.IsSolving = true;
 
-        await Task.Run(() =>
+        if (this.FnCreateMatrix is not null)
         {
-            Algorithms.Dlx.Solve(m_pentominoMatrix, this.ParallelSolver, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
-        });
+            (m_pentominoMatrixRows, m_pentominoMetadataRows) = this.FnCreateMatrix(this.Shapes.Values);
+            Debug.Assert(m_pentominoMatrixRows.Count == m_pentominoMetadataRows.Count);
+
+            this.IsSolving = true;
+
+            await Task.Run(() =>
+            {
+                Algorithms.Dlx.Solve(m_pentominoMatrixRows, this.ParallelSolver, cancelToken, this.DlxMetricsControlViewModel.ProgressMetrics);
+            });
+        }
 
         this.IsSolving = false;
         this.Solutions = this.DlxMetricsControlViewModel.ProgressMetrics.GetConfirmedSolutions();
